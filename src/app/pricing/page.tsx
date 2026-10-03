@@ -15,13 +15,12 @@ import {
   ArrowRight, 
   Lock, 
   CreditCard, 
-  Crown,
+  Crown, 
   Loader2,
-  Clock,
-  HelpCircle
+  Clock
 } from 'lucide-react';
 import { ConfettiEffect } from '@/components/ConfettiEffect';
-import { PLAN_CONFIG, COMPARISON_FEATURES, isPlusUser } from '@/config/plan';
+import { PLAN_CONFIG, isPlusUser } from '@/config/plan';
 
 function PricingContent() {
   const { session } = useAuthGuard();
@@ -124,11 +123,11 @@ function PricingContent() {
         </div>
 
         {/* Pricing Cards Container */}
-        <div className="flex flex-col md:flex-row gap-8 justify-center items-center md:items-stretch max-w-5xl mx-auto w-full mb-16">
+        <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch max-w-5xl mx-auto w-full mb-12">
           {/* Free Tier Card */}
           <motion.div
             variants={itemFadeBlur}
-            className="flex-1 w-full max-w-sm bg-white/80 backdrop-blur-md rounded-4xl p-8 sm:p-10 flex flex-col relative border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-300"
+            className="flex-1 w-full max-w-md bg-white/80 backdrop-blur-md rounded-4xl p-8 sm:p-10 flex flex-col relative border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-300"
           >
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-slate-900 mb-1">{PLAN_CONFIG.free.name}</h2>
@@ -141,30 +140,34 @@ function PricingContent() {
               <span className="text-slate-400 font-medium ml-2 text-xs">{PLAN_CONFIG.free.period}</span>
             </div>
 
-            <ul className="space-y-3.5 mb-auto text-xs sm:text-sm text-slate-700">
-              {PLAN_CONFIG.free.summaryFeatures.map((feat, idx) => (
-                <li key={idx} className="flex items-center gap-3">
-                  <div className="shrink-0 w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
+            <ul className="space-y-3.5 mb-8 text-xs sm:text-sm text-slate-700">
+              {PLAN_CONFIG.free.includedFeatures.map((item, idx) => (
+                <li key={`inc-${idx}`} className="flex items-start gap-3">
+                  <div className="shrink-0 w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center mt-0.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-slate-500" />
                   </div>
-                  <span>{feat}</span>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span>{item.text}</span>
+                    {item.isUpcoming && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 shrink-0">
+                        <Clock className="w-3 h-3" />
+                        Segera hadir
+                      </span>
+                    )}
+                  </div>
                 </li>
               ))}
-              <li className="flex items-center gap-3 text-slate-400">
-                <div className="shrink-0 w-5 h-5 rounded-full bg-slate-50 flex items-center justify-center">
-                  <Lock className="w-3 h-3 text-slate-300" />
-                </div>
-                <span className="line-through">Fase 3 & 4 (Terkunci)</span>
-              </li>
-              <li className="flex items-center gap-3 text-slate-400">
-                <div className="shrink-0 w-5 h-5 rounded-full bg-slate-50 flex items-center justify-center">
-                  <Lock className="w-3 h-3 text-slate-300" />
-                </div>
-                <span className="line-through">Sertifikasi & Simulasi Mitra</span>
-              </li>
+              {PLAN_CONFIG.free.lockedFeatures.map((item, idx) => (
+                <li key={`lock-${idx}`} className="flex items-start gap-3 text-slate-400">
+                  <div className="shrink-0 w-5 h-5 rounded-full bg-slate-50 flex items-center justify-center mt-0.5">
+                    <Lock className="w-3 h-3 text-slate-300" />
+                  </div>
+                  <span className="line-through">{item.text}</span>
+                </li>
+              ))}
             </ul>
 
-            <div className="mt-8">
+            <div className="mt-auto pt-4">
               {!isPro ? (
                 <div className="w-full bg-slate-100 text-slate-500 text-center py-3.5 rounded-2xl font-bold text-xs sm:text-sm cursor-default">
                   Paket Dasar Aktif
@@ -183,7 +186,7 @@ function PricingContent() {
           {/* Plus Tier Card (Highlighted) */}
           <motion.div
             variants={itemFadeBlur}
-            className={`flex-1 w-full max-w-sm bg-white rounded-4xl p-8 sm:p-10 flex flex-col relative transition-all duration-300 ${
+            className={`flex-1 w-full max-w-md bg-white rounded-4xl p-8 sm:p-10 flex flex-col relative transition-all duration-300 ${
               isPro
                 ? 'border-2 border-emerald-500 shadow-lg ring-4 ring-emerald-50'
                 : 'border-2 border-blue-600 shadow-xl ring-4 ring-blue-50/50 hover:shadow-2xl'
@@ -222,18 +225,26 @@ function PricingContent() {
               <span className="text-slate-400 font-medium ml-2 text-xs">{PLAN_CONFIG.plus.period}</span>
             </div>
 
-            <ul className="space-y-3.5 mb-auto text-xs sm:text-sm text-slate-800 font-medium">
-              {PLAN_CONFIG.plus.summaryFeatures.map((feat, idx) => (
-                <li key={idx} className="flex items-center gap-3">
-                  <div className="shrink-0 w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+            <ul className="space-y-3.5 mb-8 text-xs sm:text-sm text-slate-800 font-medium">
+              {PLAN_CONFIG.plus.includedFeatures.map((item, idx) => (
+                <li key={`plus-inc-${idx}`} className="flex items-start gap-3">
+                  <div className="shrink-0 w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center mt-0.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
                   </div>
-                  <span>{feat}</span>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span>{item.text}</span>
+                    {item.isUpcoming && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 shrink-0">
+                        <Clock className="w-3 h-3" />
+                        Segera hadir
+                      </span>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>
 
-            <div className="mt-8">
+            <div className="mt-auto pt-4">
               {isPro ? (
                 <Link
                   href="/roadmap"
@@ -256,77 +267,8 @@ function PricingContent() {
           </motion.div>
         </div>
 
-        {/* COMPREHENSIVE FEATURE COMPARISON TABLE */}
-        <motion.div
-          variants={itemFadeBlur}
-          className="w-full max-w-5xl mx-auto bg-white/90 backdrop-blur-md rounded-4xl border border-slate-200/80 shadow-md p-6 sm:p-10 mb-12 overflow-hidden"
-        >
-          <div className="text-center mb-8">
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-              Perbandingan Lengkap Fitur
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto">
-              Lihat perbedaan menyeluruh antara paket Free dan paket {PLAN_CONFIG.plus.name} untuk mendukung akselerasi kariermu.
-            </p>
-          </div>
-
-          <div className="overflow-x-auto -mx-6 sm:mx-0 px-6 sm:px-0">
-            <table className="w-full text-left border-collapse min-w-155">
-              <thead>
-                <tr className="border-b border-slate-200">
-                  <th className="py-4 px-4 text-sm font-bold text-slate-900 w-[44%]">Fitur</th>
-                  <th className="py-4 px-4 text-sm font-bold text-slate-700 w-[28%] text-center bg-slate-50/50 rounded-t-xl">
-                    {PLAN_CONFIG.free.name}
-                  </th>
-                  <th className="py-4 px-4 text-sm font-extrabold text-blue-600 w-[28%] text-center bg-blue-50/60 rounded-t-xl">
-                    {PLAN_CONFIG.plus.name}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
-                {COMPARISON_FEATURES.map((item, index) => (
-                  <tr 
-                    key={index}
-                    className="hover:bg-slate-50/60 transition-colors"
-                  >
-                    <td className="py-4 px-4 font-medium text-slate-800">
-                      <div className="flex items-center gap-2">
-                        <span>{item.name}</span>
-                        {item.status === 'upcoming' && (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 shrink-0">
-                            <Clock className="w-3 h-3" />
-                            {item.badge || 'Segera hadir'}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 px-4 text-center text-slate-600 bg-slate-50/30">
-                      {item.free === 'Ya' ? (
-                        <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-600">
-                          <CheckCircle2 className="w-4 h-4" />
-                        </div>
-                      ) : (
-                        <span>{item.free}</span>
-                      )}
-                    </td>
-                    <td className="py-4 px-4 text-center font-semibold text-slate-900 bg-blue-50/30">
-                      {item.plus === 'Ya' ? (
-                        <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-600">
-                          <CheckCircle2 className="w-4 h-4" />
-                        </div>
-                      ) : (
-                        <span>{item.plus}</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
-
         {/* Footer Guarantee */}
-        <div className="mt-4 text-center text-xs text-slate-400 max-w-lg">
+        <div className="text-center text-xs text-slate-400 max-w-lg">
           <p className="flex items-center justify-center gap-1.5 font-medium">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
             <span>Garansi akses fitur seketika & batalkan kapan saja tanpa komitmen.</span>
@@ -417,7 +359,7 @@ function PricingContent() {
                     Selamat Datang di {PLAN_CONFIG.plus.displayName}! 🎉
                   </h3>
                   <p className="text-xs text-slate-500 mb-6 leading-relaxed">
-                    Status akunmu kini telah aktif sebagai <strong>{PLAN_CONFIG.plus.name}</strong>. Semua materi, fase lanjutan, dan simulasi telah terbuka penuh.
+                    Status akunmu kini telah aktif sebagai <strong>{PLAN_CONFIG.plus.name}</strong>. Semua materi, fase lanjutan, dan laporan mendalam telah terbuka penuh.
                   </p>
                 </motion.div>
 
@@ -455,11 +397,11 @@ function PricingContent() {
                   </div>
                   <div className="flex items-center gap-2 text-emerald-800">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Virtual Job Simulation & Sertifikat LinkedIn</span>
+                    <span>Laporan Skill-Gap & Rekomendasi AI Mendalam</span>
                   </div>
                   <div className="flex items-center gap-2 text-emerald-800">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>AI Skill-Gap Analytics Mendalam</span>
+                    <span>Asesmen Minat & Skill Berkala</span>
                   </div>
                 </motion.div>
 
