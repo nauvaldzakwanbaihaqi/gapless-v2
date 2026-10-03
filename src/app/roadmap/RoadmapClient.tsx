@@ -7,6 +7,7 @@ import type { RoadmapNode } from '@/contexts/CareerContext';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { isPlusUser } from '@/config/plan';
 import { Navbar } from '@/components/Navbar';
+import { LearningTabsNav } from '@/components/LearningTabsNav';
 import Link from 'next/link';
 
 type AssessmentResult = {
@@ -197,6 +198,7 @@ export default function RoadmapClient({ history, initialAssessmentId, serverUser
   return (
     <div className="min-h-screen flex flex-col bg-space">
       <Navbar />
+      <LearningTabsNav />
 
       <main className="flex-1">
         {/* Switcher Header - Tabs */}

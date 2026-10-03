@@ -8,6 +8,13 @@
       "when": 1787829418369,
       "tag": "0000_wise_microchip",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791038590593,
+      "tag": "0001_daily_ink",
+      "breakpoints": true
     }
   ]
 }

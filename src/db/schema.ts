@@ -8,6 +8,7 @@ import {
   jsonb,
   boolean,
   uniqueIndex,
+  date,
 } from "drizzle-orm/pg-core";
 import { relations, eq } from "drizzle-orm";
 import type { AdapterAccount } from "@auth/core/adapters";
@@ -260,4 +261,190 @@ export const onetToolsRelations = relations(onetTools, ({ one }) => ({
     fields: [onetTools.onetsocCode],
     references: [onetOccupations.onetsocCode],
   }),
+}));
+// ──────────────────────────────────────────────
+// SOFT SKILL BASELINES (Asesmen Likert Awal)
+// ──────────────────────────────────────────────
+
+export const softSkillBaselines = pgTable("soft_skill_baselines", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  competency: text("competency").notNull(), // "Cooperation"|"Integrity"|"Dependability"|"Adaptability"|"Communication"
+  score: integer("score").notNull(),       // 0-100
+  source: text("source").notNull().default("self-report"),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+}, (t) => ({
+  userCompetencyUnique: uniqueIndex("soft_skill_baselines_user_competency")
+    .on(t.userId, t.competency),
+}));
+
+export const softSkillBaselinesRelations = relations(softSkillBaselines, ({ one }) => ({
+  user: one(users, { fields: [softSkillBaselines.userId], references: [users.id] }),
+}));
+
+// ──────────────────────────────────────────────
+// KATALOG MISI SOFT SKILL
+// ──────────────────────────────────────────────
+
+export const softSkillMissions = pgTable("soft_skill_missions", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text("title").notNull(),
+  competency: text("competency").notNull(),
+  description: text("description"),
+  estimatedMinutes: integer("estimated_minutes").default(30),
+  difficultyLevel: text("difficulty_level").default("medium"),
+  isSample: boolean("is_sample").default(true).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+// ──────────────────────────────────────────────
+// PROGRESS MISI USER (idempotent via UNIQUE)
+// ──────────────────────────────────────────────
+
+export const userMissionProgress = pgTable("user_mission_progress", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  missionId: text("mission_id").notNull().references(() => softSkillMissions.id, { onDelete: "cascade" }),
+  status: text("status").notNull().default("not_started"), // "not_started"|"submitted"|"completed"
+  submissionText: text("submission_text"),
+  submissionUrl: text("submission_url"),
+  notes: text("notes"),
+  evidenceType: text("evidence_type").notNull().default("self-report"),
+  score: integer("score"),
+  completedAt: timestamp("completed_at", { mode: "date" }),
+  updatedAt: timestamp("updated_at", { mode: "date" }).defaultNow().notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+}, (t) => ({
+  userMissionUnique: uniqueIndex("user_mission_unique").on(t.userId, t.missionId),
+}));
+
+export const userMissionProgressRelations = relations(userMissionProgress, ({ one }) => ({
+  user: one(users, { fields: [userMissionProgress.userId], references: [users.id] }),
+  mission: one(softSkillMissions, { fields: [userMissionProgress.missionId], references: [softSkillMissions.id] }),
+}));
+
+export const softSkillMissionsRelations = relations(softSkillMissions, ({ many }) => ({
+  progress: many(userMissionProgress),
+}));
+
+// ──────────────────────────────────────────────
+// KATALOG KEGIATAN
+// ──────────────────────────────────────────────
+
+export const activities = pgTable("activities", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text("title").notNull(),
+  type: text("type").notNull(),              // "organisasi"|"lomba"|"volunteer"
+  description: text("description"),
+  competencyTags: text("competency_tags").array().default([]),
+  skillTags: text("skill_tags").array().default([]),
+  deadline: timestamp("deadline", { mode: "date" }),
+  registrationUrl: text("registration_url"),
+  matchPercent: integer("match_percent").default(0),
+  isSample: boolean("is_sample").default(true).notNull(),
+  isActive: boolean("is_active").default(true).notNull(),
+  sortOrder: integer("sort_order").default(0),
+  organizerContactServer: text("organizer_contact_server"), // server-only, tidak dikirim ke client
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+// ──────────────────────────────────────────────
+// KEGIATAN DISIMPAN USER
+// ──────────────────────────────────────────────
+
+export const savedActivities = pgTable("saved_activities", {
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  activityId: text("activity_id").notNull().references(() => activities.id, { onDelete: "cascade" }),
+  savedAt: timestamp("saved_at", { mode: "date" }).defaultNow().notNull(),
+}, (t) => ({
+  pk: primaryKey({ columns: [t.userId, t.activityId] }),
+}));
+
+export const savedActivitiesRelations = relations(savedActivities, ({ one }) => ({
+  user: one(users, { fields: [savedActivities.userId], references: [users.id] }),
+  activity: one(activities, { fields: [savedActivities.activityId], references: [activities.id] }),
+}));
+
+// ──────────────────────────────────────────────
+// BUKTI & KONFIRMASI KEGIATAN
+// ──────────────────────────────────────────────
+
+export const activityEvidence = pgTable("activity_evidence", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  activityId: text("activity_id").notNull().references(() => activities.id, { onDelete: "cascade" }),
+  evidenceUrl: text("evidence_url").notNull(),
+  status: text("status").notNull().default("pending"), // "pending"|"confirmed"|"rejected"
+  confirmationTokenHash: text("confirmation_token_hash"),
+  tokenExpiresAt: timestamp("token_expires_at", { mode: "date" }),
+  confirmedAt: timestamp("confirmed_at", { mode: "date" }),
+  isSampleConfirmation: boolean("is_sample_confirmation").default(false),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export const activityEvidenceRelations = relations(activityEvidence, ({ one }) => ({
+  user: one(users, { fields: [activityEvidence.userId], references: [users.id] }),
+  activity: one(activities, { fields: [activityEvidence.activityId], references: [activities.id] }),
+}));
+
+export const activitiesRelations = relations(activities, ({ many }) => ({
+  savedBy: many(savedActivities),
+  evidence: many(activityEvidence),
+}));
+
+// ──────────────────────────────────────────────
+// SNAPSHOT READINESS (Tren Progres)
+// ──────────────────────────────────────────────
+
+export const readinessSnapshots = pgTable("readiness_snapshots", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  careerSlug: text("career_slug").notNull(),
+  hardSkillScore: integer("hard_skill_score"),
+  softSkillScore: integer("soft_skill_score"),
+  snapshotDate: date("snapshot_date").notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+}, (t) => ({
+  userCareerDateUnique: uniqueIndex("readiness_snapshot_unique")
+    .on(t.userId, t.careerSlug, t.snapshotDate),
+}));
+
+export const readinessSnapshotsRelations = relations(readinessSnapshots, ({ one }) => ({
+  user: one(users, { fields: [readinessSnapshots.userId], references: [users.id] }),
+}));
+
+// ──────────────────────────────────────────────
+// PROFIL PUBLIK (Share Passport)
+// ──────────────────────────────────────────────
+
+export const publicProfiles = pgTable("public_profiles", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").notNull().unique().references(() => users.id, { onDelete: "cascade" }),
+  publicToken: text("public_token").notNull().unique(),
+  enabled: boolean("enabled").notNull().default(false),
+  revokedAt: timestamp("revoked_at", { mode: "date" }),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export const publicProfilesRelations = relations(publicProfiles, ({ one }) => ({
+  user: one(users, { fields: [publicProfiles.userId], references: [users.id] }),
+}));
+
+// ──────────────────────────────────────────────
+// AFFILIATE / OUTGOING CLICKS TRACKING
+// ──────────────────────────────────────────────
+
+export const affiliateClicks = pgTable("affiliate_clicks", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").references(() => users.id, { onDelete: "set null" }),
+  targetType: text("target_type").notNull(),
+  targetId: text("target_id").notNull(),
+  clickedAt: timestamp("clicked_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export const affiliateClicksRelations = relations(affiliateClicks, ({ one }) => ({
+  user: one(users, { fields: [affiliateClicks.userId], references: [users.id] }),
 }));
