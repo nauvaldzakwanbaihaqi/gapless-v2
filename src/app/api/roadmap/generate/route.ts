@@ -6,6 +6,7 @@ import { CAREER_PROFILES } from '@/data/gaplessData';
 import { auth } from '@/auth';
 import { z } from 'zod';
 import { checkRateLimit } from '@/lib/rateLimit';
+import { isPlusUser } from '@/config/plan';
 import { matchCareerToOnet } from '@/lib/onetMatcher';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
     }
 
     const userTier = (session.user as any).tier || 'Free';
-    const isPro = Boolean(userTier && (userTier.toLowerCase().includes('pro') || userTier.toLowerCase().includes('premium')));
+    const isPro = isPlusUser(userTier);
 
 
     const rawBody = await req.json();

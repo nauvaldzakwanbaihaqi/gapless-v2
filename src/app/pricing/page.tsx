@@ -6,7 +6,7 @@ import { Navbar } from '@/components/Navbar';
 import { motion, AnimatePresence, Variants } from 'motion/react';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 import { signIn } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { 
   CheckCircle2, 
   Sparkles, 
@@ -16,18 +16,19 @@ import {
   Lock, 
   CreditCard, 
   Crown,
-  Loader2
+  Loader2,
+  Clock,
+  HelpCircle
 } from 'lucide-react';
 import { ConfettiEffect } from '@/components/ConfettiEffect';
+import { PLAN_CONFIG, COMPARISON_FEATURES, isPlusUser } from '@/config/plan';
 
 function PricingContent() {
-  const { session, status } = useAuthGuard();
-  const router = useRouter();
+  const { session } = useAuthGuard();
   const searchParams = useSearchParams();
 
   const userTier = (session?.user as { tier?: string })?.tier || 'Free';
-  const isPro = Boolean(userTier && (userTier.toLowerCase().includes('pro') || userTier.toLowerCase().includes('premium')));
-
+  const isPro = isPlusUser(userTier);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [processStep, setProcessStep] = useState(0); // 0: idle, 1: processing, 2: success
@@ -52,7 +53,7 @@ function PricingContent() {
     setProcessStep(1);
     setInvoiceId(`GAP-INV-${Math.random().toString(36).substring(2, 8).toUpperCase()}`);
 
-    // Simulate realistic payment gateway processing
+    // Simulate realistic payment processing
     try {
       await new Promise((r) => setTimeout(r, 1800));
 
@@ -92,7 +93,7 @@ function PricingContent() {
 
       {/* Main Container */}
       <motion.div
-        className="flex-1 flex flex-col items-center justify-center py-12 px-4 relative z-10"
+        className="flex-1 flex flex-col items-center justify-center py-12 px-4 sm:px-6 relative z-10"
         initial="hidden"
         animate="visible"
         variants={{
@@ -100,7 +101,7 @@ function PricingContent() {
           visible: {
             opacity: 1,
             transition: {
-              staggerChildren: 0.15,
+              staggerChildren: 0.12,
               delayChildren: 0.1,
             },
           },
@@ -111,7 +112,7 @@ function PricingContent() {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4 bg-blue-50 border border-blue-200 shadow-2xs">
             <Sparkles className="w-4 h-4 text-blue-600" />
             <span className="text-xs font-bold text-blue-900 uppercase tracking-wide">
-              Akses Karir Tanpa Batas
+              Akselerasi Karier Maksimal
             </span>
           </div>
 
@@ -130,42 +131,32 @@ function PricingContent() {
         </div>
 
         {/* Pricing Cards Container */}
-        <div className="flex flex-col md:flex-row gap-8 justify-center items-center md:items-stretch max-w-5xl mx-auto w-full">
+        <div className="flex flex-col md:flex-row gap-8 justify-center items-center md:items-stretch max-w-5xl mx-auto w-full mb-16">
           {/* Free Tier Card */}
           <motion.div
             variants={itemFadeBlur}
             className="flex-1 w-full max-w-sm bg-white/80 backdrop-blur-md rounded-4xl p-8 sm:p-10 flex flex-col relative border border-slate-200/80 shadow-sm hover:shadow-md transition-all duration-300"
           >
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-slate-900 mb-1">Free</h2>
-              <p className="text-slate-500 text-xs">Esensi untuk eksplorasi awal.</p>
+              <h2 className="text-2xl font-bold text-slate-900 mb-1">{PLAN_CONFIG.free.name}</h2>
+              <p className="text-slate-500 text-xs">{PLAN_CONFIG.free.description}</p>
             </div>
 
             <div className="flex items-baseline mb-8">
               <span className="text-slate-500 font-medium mr-1.5 text-sm">Rp</span>
-              <span className="text-6xl font-black text-slate-900 tracking-tight">0</span>
-              <span className="text-slate-400 font-medium ml-2 text-xs">/Bulan</span>
+              <span className="text-6xl font-black text-slate-900 tracking-tight">{PLAN_CONFIG.free.priceFormatted}</span>
+              <span className="text-slate-400 font-medium ml-2 text-xs">{PLAN_CONFIG.free.period}</span>
             </div>
 
             <ul className="space-y-3.5 mb-auto text-xs sm:text-sm text-slate-700">
-              <li className="flex items-center gap-3">
-                <div className="shrink-0 w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-slate-500" />
-                </div>
-                <span>2x Kesempatan Asesmen Minat</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="shrink-0 w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-slate-500" />
-                </div>
-                <span>Eksplorasi Profil Karier Standar</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="shrink-0 w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-slate-500" />
-                </div>
-                <span>Roadmap Belajar (Fase 1 & 2)</span>
-              </li>
+              {PLAN_CONFIG.free.summaryFeatures.map((feat, idx) => (
+                <li key={idx} className="flex items-center gap-3">
+                  <div className="shrink-0 w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-slate-500" />
+                  </div>
+                  <span>{feat}</span>
+                </li>
+              ))}
               <li className="flex items-center gap-3 text-slate-400">
                 <div className="shrink-0 w-5 h-5 rounded-full bg-slate-50 flex items-center justify-center">
                   <Lock className="w-3 h-3 text-slate-300" />
@@ -196,7 +187,7 @@ function PricingContent() {
             </div>
           </motion.div>
 
-          {/* Student Pro Tier Card (Highlighted) */}
+          {/* Plus Tier Card (Highlighted) */}
           <motion.div
             variants={itemFadeBlur}
             className={`flex-1 w-full max-w-sm bg-white rounded-4xl p-8 sm:p-10 flex flex-col relative transition-all duration-300 ${
@@ -217,56 +208,36 @@ function PricingContent() {
               ) : (
                 <>
                   <Sparkles className="w-3 h-3 text-amber-300" />
-                  <span>Akses Penuh Tanpa Batas</span>
+                  <span>Rekomendasi Paket Pilihan</span>
                 </>
               )}
             </div>
 
             <div className="mb-6">
               <h2 className="text-2xl font-bold text-slate-900 mb-1 flex items-center gap-2">
-                Student Pro
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-extrabold">PRO</span>
+                {PLAN_CONFIG.plus.name}
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-extrabold">
+                  {PLAN_CONFIG.plus.badge}
+                </span>
               </h2>
-              <p className="text-slate-500 text-xs">Akselerasi karier dengan AI & simulasi industri penuh.</p>
+              <p className="text-slate-500 text-xs">{PLAN_CONFIG.plus.description}</p>
             </div>
 
             <div className="flex items-baseline mb-8">
               <span className="text-slate-500 font-medium mr-1.5 text-sm">Rp</span>
-              <span className="text-6xl font-black text-slate-900 tracking-tight">69.000</span>
-              <span className="text-slate-400 font-medium ml-2 text-xs">/Bulan</span>
+              <span className="text-6xl font-black text-slate-900 tracking-tight">{PLAN_CONFIG.plus.priceFormatted}</span>
+              <span className="text-slate-400 font-medium ml-2 text-xs">{PLAN_CONFIG.plus.period}</span>
             </div>
 
             <ul className="space-y-3.5 mb-auto text-xs sm:text-sm text-slate-800 font-medium">
-              <li className="flex items-center gap-3">
-                <div className="shrink-0 w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
-                </div>
-                <span><strong>Unlimited</strong> Asesmen Minat & Skill</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="shrink-0 w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
-                </div>
-                <span><strong>Buka Semua 4 Fase</strong> Learning Roadmap</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="shrink-0 w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
-                </div>
-                <span><strong>Virtual Job Simulation</strong> (Studi Kasus Mitra)</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="shrink-0 w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
-                </div>
-                <span><strong>Sertifikat Resmi</strong> Siap Post di LinkedIn</span>
-              </li>
-              <li className="flex items-center gap-3">
-                <div className="shrink-0 w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
-                </div>
-                <span>AI Skill-Gap Analytics Real-Time</span>
-              </li>
+              {PLAN_CONFIG.plus.summaryFeatures.map((feat, idx) => (
+                <li key={idx} className="flex items-center gap-3">
+                  <div className="shrink-0 w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                  </div>
+                  <span>{feat}</span>
+                </li>
+              ))}
             </ul>
 
             <div className="mt-8">
@@ -276,7 +247,7 @@ function PricingContent() {
                   className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-center py-4 rounded-2xl font-bold text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2"
                 >
                   <Crown className="w-4 h-4" />
-                  <span>Buka Roadmap Pro Kamu</span>
+                  <span>Buka Roadmap {PLAN_CONFIG.plus.name} Kamu</span>
                 </Link>
               ) : (
                 <button
@@ -285,15 +256,84 @@ function PricingContent() {
                   className="w-full bg-linear-to-r from-blue-600 via-indigo-600 to-sky-600 hover:opacity-95 text-white text-center py-4 rounded-2xl font-bold text-xs sm:text-sm transition-all shadow-md hover:shadow-xl hover:-translate-y-0.5 cursor-pointer flex items-center justify-center gap-2"
                 >
                   <Zap className="w-4 h-4 fill-amber-300 text-amber-300" />
-                  <span>Upgrade Sekarang (Instan)</span>
+                  <span>Upgrade ke {PLAN_CONFIG.plus.name} (Instan)</span>
                 </button>
               )}
             </div>
           </motion.div>
         </div>
 
+        {/* COMPREHENSIVE FEATURE COMPARISON TABLE */}
+        <motion.div
+          variants={itemFadeBlur}
+          className="w-full max-w-5xl mx-auto bg-white/90 backdrop-blur-md rounded-4xl border border-slate-200/80 shadow-md p-6 sm:p-10 mb-12 overflow-hidden"
+        >
+          <div className="text-center mb-8">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
+              Perbandingan Lengkap Fitur
+            </h3>
+            <p className="text-xs sm:text-sm text-slate-500 max-w-xl mx-auto">
+              Lihat perbedaan menyeluruh antara paket Free dan paket {PLAN_CONFIG.plus.name} untuk mendukung akselerasi kariermu.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto -mx-6 sm:mx-0 px-6 sm:px-0">
+            <table className="w-full text-left border-collapse min-w-[620px]">
+              <thead>
+                <tr className="border-b border-slate-200">
+                  <th className="py-4 px-4 text-sm font-bold text-slate-900 w-[44%]">Fitur</th>
+                  <th className="py-4 px-4 text-sm font-bold text-slate-700 w-[28%] text-center bg-slate-50/50 rounded-t-xl">
+                    {PLAN_CONFIG.free.name}
+                  </th>
+                  <th className="py-4 px-4 text-sm font-extrabold text-blue-600 w-[28%] text-center bg-blue-50/60 rounded-t-xl">
+                    {PLAN_CONFIG.plus.name}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
+                {COMPARISON_FEATURES.map((item, index) => (
+                  <tr 
+                    key={index}
+                    className="hover:bg-slate-50/60 transition-colors"
+                  >
+                    <td className="py-4 px-4 font-medium text-slate-800">
+                      <div className="flex items-center gap-2">
+                        <span>{item.name}</span>
+                        {item.status === 'upcoming' && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 shrink-0">
+                            <Clock className="w-3 h-3" />
+                            {item.badge || 'Segera hadir'}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-center text-slate-600 bg-slate-50/30">
+                      {item.free === 'Ya' ? (
+                        <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-600">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                      ) : (
+                        <span>{item.free}</span>
+                      )}
+                    </td>
+                    <td className="py-4 px-4 text-center font-semibold text-slate-900 bg-blue-50/30">
+                      {item.plus === 'Ya' ? (
+                        <div className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-100 text-emerald-600">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                      ) : (
+                        <span>{item.plus}</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </motion.div>
+
         {/* Footer Guarantee */}
-        <div className="mt-12 text-center text-xs text-slate-400 max-w-lg">
+        <div className="mt-4 text-center text-xs text-slate-400 max-w-lg">
           <p className="flex items-center justify-center gap-1.5 font-medium">
             <ShieldCheck className="w-4 h-4 text-emerald-500" />
             <span>Garansi akses fitur seketika & batalkan kapan saja tanpa komitmen.</span>
@@ -328,7 +368,7 @@ function PricingContent() {
                   Memproses Pembayaran...
                 </h3>
                 <p className="text-xs text-slate-500 mb-6">
-                  Menghubungkan ke payment gateway & mengaktifkan Student Pro untuk <strong>{session?.user?.name}</strong>
+                  Menghubungkan ke payment gateway & mengaktifkan paket {PLAN_CONFIG.plus.name} untuk <strong>{session?.user?.name}</strong>
                 </p>
 
                 <div className="space-y-2 mb-6">
@@ -381,10 +421,10 @@ function PricingContent() {
                     Pembayaran Berhasil
                   </span>
                   <h3 className="text-2xl font-black text-slate-900 mb-1">
-                    Selamat Datang di Student Pro! 🎉
+                    Selamat Datang di {PLAN_CONFIG.plus.displayName}! 🎉
                   </h3>
                   <p className="text-xs text-slate-500 mb-6 leading-relaxed">
-                    Status akunmu kini telah aktif sebagai <strong>Student Pro</strong>. Semua materi, fase lanjutan, dan sertifikasi telah terbuka penuh.
+                    Status akunmu kini telah aktif sebagai <strong>{PLAN_CONFIG.plus.name}</strong>. Semua materi, fase lanjutan, dan simulasi telah terbuka penuh.
                   </p>
                 </motion.div>
 
@@ -401,11 +441,11 @@ function PricingContent() {
                   </div>
                   <div className="flex justify-between text-slate-500">
                     <span>Paket:</span>
-                    <span className="font-bold text-blue-600">Student Pro (Akses Penuh)</span>
+                    <span className="font-bold text-blue-600">{PLAN_CONFIG.plus.displayName} (Akses Penuh)</span>
                   </div>
                   <div className="flex justify-between text-slate-500 pt-1 border-t border-slate-200">
                     <span>Total Pembayaran:</span>
-                    <span className="font-bold text-emerald-600 text-sm">Rp 69.000 (Lunas)</span>
+                    <span className="font-bold text-emerald-600 text-sm">{PLAN_CONFIG.plus.priceWithCurrency} (Lunas)</span>
                   </div>
                 </motion.div>
 
@@ -426,7 +466,7 @@ function PricingContent() {
                   </div>
                   <div className="flex items-center gap-2 text-emerald-800">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Asesmen Minat & Skill Tanpa Batas</span>
+                    <span>AI Skill-Gap Analytics Mendalam</span>
                   </div>
                 </motion.div>
 
@@ -438,7 +478,7 @@ function PricingContent() {
                   onClick={handleFinishAndExplore}
                   className="w-full py-4 bg-linear-to-r from-blue-600 via-indigo-600 to-sky-600 hover:opacity-95 text-white rounded-2xl text-sm font-bold shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <span>Mulai Eksplorasi Fitur Pro</span>
+                  <span>Mulai Eksplorasi Fitur {PLAN_CONFIG.plus.name}</span>
                   <ArrowRight className="w-4 h-4" />
                 </motion.button>
               </motion.div>

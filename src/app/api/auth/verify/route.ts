@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { db } from '@/db';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
+import { isPlusUser } from '@/config/plan';
 
 export async function GET() {
   try {
@@ -24,7 +25,7 @@ export async function GET() {
     }
 
     const tier = userInDb[0].tier || 'FREE';
-    const isPro = tier.toLowerCase().includes('pro');
+    const isPro = isPlusUser(tier);
 
     return NextResponse.json({ isValid: true, tier, isPro }, { status: 200 });
   } catch (error) {
@@ -32,4 +33,3 @@ export async function GET() {
     return NextResponse.json({ isValid: false }, { status: 500 });
   }
 }
-

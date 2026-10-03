@@ -3,6 +3,7 @@
 import { signIn, signOut } from "next-auth/react";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { LogOut } from "lucide-react";
+import { isPlusUser, PLAN_CONFIG } from "@/config/plan";
 
 interface AuthButtonProps {
     variant?: 'light' | 'dark';
@@ -21,7 +22,7 @@ export default function AuthButton({ variant = 'light' }: AuthButtonProps) {
     // Kalau User sudah login
     if (session?.user) {
         const tier = session.user.tier || '';
-        const isPro = Boolean(tier && (tier.toLowerCase().includes('pro') || tier.toLowerCase().includes('premium')));
+        const isPro = isPlusUser(tier);
 
         return (
             <div className={`flex items-center gap-2 md:gap-3 p-1.5 md:p-2 rounded-full md:rounded-2xl border transition-all ${
@@ -40,12 +41,12 @@ export default function AuthButton({ variant = 'light' }: AuthButtonProps) {
                     <div className="flex items-center gap-1.5 mt-1">
                         <span className={`text-[10px] ${isDark ? 'text-slate-400' : 'text-gray-400'}`}>Status:</span>
                         {isPro ? (
-                            <span className="inline-flex items-center gap-0.5 bg-linear-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black text-[10px] px-2 py-0.5 rounded-full shadow-2xs">
-                                <span>PRO</span>
+                            <span className="inline-flex items-center gap-0.5 bg-linear-to-r from-blue-600 via-indigo-600 to-sky-500 text-white font-black text-[10px] px-2 py-0.5 rounded-full shadow-2xs">
+                                <span>{PLAN_CONFIG.plus.badge}</span>
                             </span>
                         ) : (
                             <div className="flex items-center gap-1">
-                                <span className={`font-bold text-[10px] ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>FREE</span>
+                                <span className={`font-bold text-[10px] ${isDark ? 'text-slate-300' : 'text-slate-500'}`}>{PLAN_CONFIG.free.badge}</span>
                                 <a href="/pricing" className={`text-[10px] font-bold hover:underline ${isDark ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}>
                                     (Upgrade)
                                 </a>

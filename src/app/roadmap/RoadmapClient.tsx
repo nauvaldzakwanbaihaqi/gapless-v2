@@ -5,6 +5,7 @@ import { CAREER_PROFILES as CAREERS, type CurriculumPhase } from '@/data/gapless
 import { RoadmapView } from '@/components/RoadmapView';
 import type { RoadmapNode } from '@/contexts/CareerContext';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
+import { isPlusUser } from '@/config/plan';
 import { Navbar } from '@/components/Navbar';
 import Link from 'next/link';
 
@@ -28,7 +29,7 @@ interface RoadmapClientProps {
 export default function RoadmapClient({ history, initialAssessmentId, serverUserTier, serverIsPro }: RoadmapClientProps) {
   const { session, status } = useAuthGuard();
   const userTier = (session?.user as { tier?: string })?.tier || serverUserTier || 'Free';
-  const isPro = serverIsPro !== undefined ? serverIsPro : Boolean(userTier && (userTier.toLowerCase().includes('pro') || userTier.toLowerCase().includes('premium')));
+  const isPro = serverIsPro !== undefined ? serverIsPro : isPlusUser(userTier);
 
 
   // Default to initialAssessmentId if valid, else most recent

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2, ChevronDown, RotateCcw, Lock, Home } from 'lucide-react';
 import { useGaplessContext } from '@/contexts/CareerContext';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
+import { isPlusUser, PLAN_CONFIG } from '@/config/plan';
 import Link from 'next/link';
 import type { CareerProfile } from '@/data/gaplessData';
 import type { RoadmapNode } from '@/contexts/CareerContext';
@@ -90,7 +91,7 @@ export function RoadmapView({ overrideData, isPro: propIsPro }: RoadmapViewProps
   if (!selectedCareer) return null;
 
   const userTier = (session?.user as { tier?: string })?.tier || 'Free';
-  const isPro = propIsPro !== undefined ? propIsPro : Boolean(userTier && (userTier.toLowerCase().includes('pro') || userTier.toLowerCase().includes('premium')));
+  const isPro = propIsPro !== undefined ? propIsPro : isPlusUser(userTier);
 
 
   const totalModules = roadmapWithProgress.reduce(
@@ -175,11 +176,11 @@ export function RoadmapView({ overrideData, isPro: propIsPro }: RoadmapViewProps
                           <Lock className="w-6 h-6" />
                         </div>
                         <span className="text-[11px] font-extrabold px-3 py-1 rounded-full bg-linear-to-r from-blue-600 to-indigo-600 text-white uppercase tracking-wider mb-2 shadow-xs">
-                          Akses Eksklusif Pro
+                          Akses Eksklusif Plus
                         </span>
-                        <h4 className="font-bold text-slate-900 text-xl mb-2">Fase Khusus Pro</h4>
+                        <h4 className="font-bold text-slate-900 text-xl mb-2">Fase Khusus Plus</h4>
                         <p className="text-sm text-slate-500 mb-6 px-2 leading-relaxed">
-                          Upgrade ke paket Student Pro untuk membuka seluruh fase kurikulum lanjutan dan maksimalkan potensimu.
+                          Upgrade ke paket Plus untuk membuka seluruh fase kurikulum lanjutan dan maksimalkan potensimu.
                         </p>
                         <Link href="/pricing" className="bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-full text-sm font-bold transition-all shadow-md hover:shadow-lg w-full">
                           Upgrade Sekarang

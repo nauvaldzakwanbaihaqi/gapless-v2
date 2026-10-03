@@ -11,7 +11,7 @@ export async function POST() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Update user tier in DB to Student Pro
+    // Update user tier in DB to Student Pro (internal tier value preserved for compatibility)
     await db.update(users)
       .set({ tier: 'Student Pro' })
       .where(eq(users.id, session.user.id));
@@ -19,10 +19,10 @@ export async function POST() {
     return NextResponse.json({
       success: true,
       tier: 'Student Pro',
-      message: 'Selamat! Akun kamu berhasil di-upgrade ke Student Pro.',
+      message: 'Selamat! Akun kamu berhasil di-upgrade ke Plus.',
     });
   } catch (error) {
-    console.error('Error upgrading to Pro:', error);
+    console.error('Error upgrading to Plus:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
