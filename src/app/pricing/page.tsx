@@ -109,13 +109,6 @@ function PricingContent() {
       >
         {/* Header Section */}
         <div className="text-center max-w-2xl mb-12">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-4 bg-blue-50 border border-blue-200 shadow-2xs">
-            <Sparkles className="w-4 h-4 text-blue-600" />
-            <span className="text-xs font-bold text-blue-900 uppercase tracking-wide">
-              Akselerasi Karier Maksimal
-            </span>
-          </div>
-
           <motion.h1
             variants={itemFadeBlur}
             className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-slate-900 tracking-tight leading-tight mb-3"
@@ -278,7 +271,7 @@ function PricingContent() {
           </div>
 
           <div className="overflow-x-auto -mx-6 sm:mx-0 px-6 sm:px-0">
-            <table className="w-full text-left border-collapse min-w-[620px]">
+            <table className="w-full text-left border-collapse min-w-155">
               <thead>
                 <tr className="border-b border-slate-200">
                   <th className="py-4 px-4 text-sm font-bold text-slate-900 w-[44%]">Fitur</th>
