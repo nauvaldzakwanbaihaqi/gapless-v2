@@ -321,27 +321,7 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
       })}
 
       {/* Locked teaser untuk Free */}
-      {lockedCount > 0 && (
-        <div className="bg-white border-2 border-dashed border-slate-200 rounded-3xl p-8 text-center">
-          <div className="w-12 h-12 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Lock className="w-5 h-5 text-slate-400" />
-          </div>
-          <p className="font-semibold text-slate-700 mb-1">
-            {lockedCount} misi lainnya tersedia di Plus
-          </p>
-          <p className="text-sm text-slate-400 mb-4">
-            Akses semua misi, bar progres 5 kompetensi, dan saran perbaikan personal.
-          </p>
-          <Link
-            href="/pricing"
-            id="misi-upgrade-cta"
-            className="inline-flex items-center gap-2 bg-blue-600 text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-blue-700 transition-colors"
-          >
-            <Star className="w-4 h-4" />
-            Upgrade ke Plus
-          </Link>
-        </div>
-      )}
+      
     </div>
   );
 }

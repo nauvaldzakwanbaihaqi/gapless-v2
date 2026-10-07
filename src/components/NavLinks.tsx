@@ -20,7 +20,6 @@ export function NavLinks({ authButton, variant = 'light' }: NavLinksProps) {
     { href: "/", label: "Home" },
     { href: "/roadmap", label: "Learning Roadmap" },
     { href: "/results", label: "Hasil Saya" },
-    { href: "/pricing", label: "Pricing" },
   ];
 
   return (

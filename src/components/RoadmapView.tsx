@@ -168,27 +168,6 @@ export function RoadmapView({ overrideData, isPro: propIsPro }: RoadmapViewProps
                     isActivePhase ? 'border-2 border-blue-600 ring-4 ring-blue-50 shadow-md' : 'border border-slate-200 shadow-sm'
                   }`}
                 >
-                  {/* Pro Lock Overlay */}
-                  {isProLocked && (
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center backdrop-blur-xs bg-white/40">
-                      <div className="bg-white/95 backdrop-blur-md border border-slate-100 p-8 rounded-3xl shadow-xl flex flex-col items-center max-w-sm">
-                        <div className="w-14 h-14 bg-linear-to-br from-blue-600 to-indigo-600 rounded-full flex items-center justify-center shadow-md mb-4 text-white">
-                          <Lock className="w-6 h-6" />
-                        </div>
-                        <span className="text-[11px] font-extrabold px-3 py-1 rounded-full bg-linear-to-r from-blue-600 to-indigo-600 text-white uppercase tracking-wider mb-2 shadow-xs">
-                          Akses Eksklusif Plus
-                        </span>
-                        <h4 className="font-bold text-slate-900 text-xl mb-2">Fase Khusus Plus</h4>
-                        <p className="text-sm text-slate-500 mb-6 px-2 leading-relaxed">
-                          Upgrade ke paket Plus untuk membuka seluruh fase kurikulum lanjutan dan maksimalkan potensimu.
-                        </p>
-                        <Link href="/pricing" className="bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-full text-sm font-bold transition-all shadow-md hover:shadow-lg w-full">
-                          Upgrade Sekarang
-                        </Link>
-                      </div>
-                    </div>
-                  )}
-
                   {/* Prerequisite Sequential Lock Overlay (Beda tampilan dengan Pro) */}
                   {isPrereqLocked && (
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center backdrop-blur-xs bg-slate-50/40">
