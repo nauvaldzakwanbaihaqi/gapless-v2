@@ -157,7 +157,7 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
       </div>
 
       {/* Kompetensi Bar (Plus only) */}
-      {entitlements.canSeeCompetencyBars && (
+      {true && (
         <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
           <h2 className="font-semibold text-slate-900 mb-4 flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-blue-600" />

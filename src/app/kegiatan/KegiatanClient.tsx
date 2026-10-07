@@ -186,32 +186,11 @@ export function KegiatanClient({
               <Calendar className="w-5 h-5" />
             </span>
             <h1 className="text-xl font-bold text-slate-900">Rekomendasi Kegiatan</h1>
-            {isPlus ? (
-              <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm">
-                Plus Aktif
-              </span>
-            ) : (
-              <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">
-                Free: {monthlyQuota} Kegiatan Terdekat
-              </span>
-            )}
           </div>
           <p className="text-sm text-slate-600">
-            {isPlus
-              ? 'Katalog kegiatan terkurasi yang dicocokkan deterministik dengan skill gap & target kariermu.'
-              : 'Eksplorasi kegiatan terdekat untuk mengasah kepemimpinan, kerja tim, dan portofolio nyata.'}
+            Katalog kegiatan terkurasi (organisasi, lomba, dan volunteer) untuk mengasah kepemimpinan, kerja tim, dan portofolio nyata.
           </p>
         </div>
-
-        {!isPlus && (
-          <Link
-            href="/pricing"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium text-xs shadow hover:opacity-95 transition"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            Buka Semua Kegiatan di Plus
-          </Link>
-        )}
       </div>
 
       {/* Filter Bar & Search */}
@@ -274,7 +253,7 @@ export function KegiatanClient({
                       <span className="capitalize">{act.type}</span>
                     </span>
 
-                    {isPlus && act.matchPercent && act.matchPercent > 0 ? (
+                    {act.matchPercent && act.matchPercent > 0 ? (
                       <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100 flex items-center gap-1">
                         <Sparkles className="w-3 h-3" />
                         {act.matchPercent}% Cocok
@@ -385,29 +364,7 @@ export function KegiatanClient({
         </div>
       )}
 
-      {/* Locked Teaser for Free Users */}
-      {!isPlus && lockedCount > 0 && (
-        <div className="relative rounded-2xl p-6 bg-gradient-to-r from-slate-900 to-indigo-950 text-white overflow-hidden shadow-lg border border-indigo-900/50">
-          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 text-xs font-medium border border-indigo-400/30 mb-2">
-                <Lock className="w-3 h-3" />
-                +{lockedCount} Kegiatan Lainnya Tersedia di Plus
-              </div>
-              <h3 className="text-lg font-bold">Buka Semua Rekomendasi Kegiatan & Urutan Gap</h3>
-              <p className="text-xs text-indigo-200/90 max-w-xl mt-1 leading-relaxed">
-                Di paket Plus, kamu bisa melihat seluruh katalog kegiatan aktif, diurutkan berdasarkan kecocokan terbesar terhadap skill gap kariermu.
-              </p>
-            </div>
-            <Link
-              href="/pricing"
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white text-xs font-semibold shadow-md transition whitespace-nowrap"
-            >
-              Upgrade ke Plus (Rp29.000)
-            </Link>
-          </div>
-        </div>
-      )}
+
 
       {/* Modal Submit Evidence */}
       <AnimatePresence>

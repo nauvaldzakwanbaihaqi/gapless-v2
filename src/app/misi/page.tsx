@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { Navbar } from '@/components/Navbar';
 import { LearningTabsNav } from '@/components/LearningTabsNav';
-import { getEntitlements, ENTITLEMENT_CONFIG } from '@/lib/entitlements';
+import { getEntitlements } from '@/lib/entitlements';
 import { db } from '@/db';
 import { softSkillMissions, userMissionProgress } from '@/db/schema';
 import { eq, asc } from 'drizzle-orm';

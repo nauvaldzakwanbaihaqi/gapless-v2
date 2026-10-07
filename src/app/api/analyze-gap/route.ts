@@ -1,24 +1,17 @@
 import { createGroq } from '@ai-sdk/groq';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { generateObject } from 'ai';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/auth';
 import { checkRateLimit } from '@/lib/rateLimit';
+import { hasPurchased } from '@/lib/payment_service';
 
-// 1. Inisialisasi Provider
-const groq = createGroq({ apiKey: process.env.GROQ_API_KEY || '' });
 const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY || '' });
-const deepseek = createOpenAICompatible({
-  name: 'deepseek',
-  apiKey: process.env.DEEPSEEK_API_KEY || '',
-  baseURL: 'https://api.deepseek.com/v1',
-});
 
-// 2. Definisi Skema Zod Input & Output
 const RequestSchema = z.object({
   roleName: z.string().min(1, "Role name tidak boleh kosong"),
+  careerSlug: z.string().optional(),
   skillGapData: z.array(z.object({
     name: z.string(),
     current: z.number().min(0).max(10),
@@ -41,12 +34,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // B. Rate Limit Check (Max 15 requests per minute per user)
-    if (!checkRateLimit(session.user.id, 15, 60000)) {
-      return NextResponse.json({ error: 'Too Many Requests' }, { status: 429 });
-    }
-
-    // C. Origin Check
+    // Origin Check
     const origin = request.headers.get('origin');
     const referer = request.headers.get('referer');
     const host = request.headers.get('host');
@@ -58,13 +46,50 @@ export async function POST(request: Request) {
 
     const rawBody = await request.json();
     
-    // D. Validasi Zod
+    // Validasi Zod
     const validationResult = RequestSchema.safeParse(rawBody);
     if (!validationResult.success) {
       return NextResponse.json({ error: 'Bad Request', details: validationResult.error.format() }, { status: 400 });
     }
 
-    const { skillGapData, roleName } = validationResult.data;
+    const { skillGapData, roleName, careerSlug: rawSlug } = validationResult.data;
+    const careerSlug = rawSlug || roleName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+    // Cek apakah user telah membeli Laporan Gap untuk career path ini
+    const isPurchased = await hasPurchased(session.user.id, 'gap_report', careerSlug);
+
+    // 🔒 GATING: Jika belum bayar, return 402 + Ringkasan Teks Gratis Saja (Tanpa Nilai Skor & Tanpa Radar Data)
+    if (!isPurchased) {
+      const summaryMatching = skillGapData
+        .filter((s) => s.current >= s.required)
+        .map((s) => s.name);
+      
+      const summaryDevelopment = skillGapData
+        .filter((s) => s.current < s.required)
+        .map((s) => s.name);
+
+      return NextResponse.json(
+        {
+          isPurchased: false,
+          error: 'Payment Required',
+          message: 'Laporan analisis kesenjangan mendalam & grafik radar terkunci. Beli seharga Rp9.900 untuk membuka akses permanen.',
+          productKey: 'gap_report',
+          careerSlug,
+          price: 9900,
+          priceFormatted: 'Rp 9.900',
+          freeSummary: {
+            matchingSkills: summaryMatching,
+            developmentSkills: summaryDevelopment,
+          },
+        },
+        { status: 402 }
+      );
+    }
+
+    // Rate Limit Check untuk AI Call
+    if (!checkRateLimit(session.user.id, 15, 60000)) {
+      return NextResponse.json({ error: 'Too Many Requests' }, { status: 429 });
+    }
 
     const gapSummary = skillGapData
       .map(gap => `${gap.name}: User Level ${gap.current}, Required Level ${gap.required}`)
@@ -81,7 +106,7 @@ SKILL GAP DATA: ${gapSummary}
 
 Berikan analisis terstruktur menggunakan Bahasa Indonesia yang profesional dan memotivasi.`;
 
-    // 3. Eksekusi AI dengan Multi-Tier Fallback (Gemini 3.6 Flash -> Gemini 3.1 Flash Lite -> Heuristik)
+    // Eksekusi AI dengan Multi-Tier Fallback
     let object;
     let engineUsed = 'gemini-3.6-flash';
 
@@ -101,44 +126,27 @@ Berikan analisis terstruktur menggunakan Bahasa Indonesia yang profesional dan m
         throw new Error('GEMINI_API_KEY missing');
       }
     } catch (primaryError: any) {
-      console.warn('⚠️ Gemini 3.6 Flash terkendala, mencoba fallback ke Gemini 3.1 Flash Lite...', primaryError?.message);
-      try {
-        if (process.env.GEMINI_API_KEY) {
-          const liteResult = await generateObject({
-            model: google('gemini-3.1-flash-lite'),
-            schema: GapInsightSchema,
-            system: systemPrompt,
-            prompt: userPrompt,
-            temperature: 0.5,
-            maxRetries: 0,
-            abortSignal: AbortSignal.timeout(8000),
-          });
-          object = liteResult.object;
-          engineUsed = 'gemini-3.1-flash-lite';
-        } else {
-          throw new Error('GEMINI_API_KEY missing');
-        }
-      } catch (liteError: any) {
-        console.warn('⚠️ Semua LLM API terkendala, menggunakan analisis kesenjangan terstruktur...', liteError?.message);
-        
-        const matching = skillGapData
-          .filter(s => s.current >= s.required)
-          .map(s => `Pemahaman kompetensi pada ${s.name} sudah memenuhi standar yang diharapkan.`);
-        const gaps = skillGapData
-          .filter(s => s.current < s.required)
-          .map(s => `Perlu peningkatan pada ${s.name} (level saat ini: ${s.current} dari target ${s.required}).`);
+      console.warn('⚠️ Gemini 3.6 Flash terkendala, menggunakan analisis kesenjangan terstruktur...', primaryError?.message);
+      
+      const matching = skillGapData
+        .filter(s => s.current >= s.required)
+        .map(s => `Pemahaman kompetensi pada ${s.name} sudah memenuhi standar yang diharapkan.`);
+      const gaps = skillGapData
+        .filter(s => s.current < s.required)
+        .map(s => `Perlu peningkatan pada ${s.name} (level saat ini: ${s.current} dari target ${s.required}).`);
 
-        object = {
-          basis_penilaian: 'Berdasarkan profil role yang kamu pilih',
-          kesesuaian: matching.length > 0 ? matching.slice(0, 3) : [`Fondasi awal yang baik untuk memulai pemahaman peran ${roleName}.`],
-          kekurangan: gaps.length > 0 ? gaps.slice(0, 3) : [`Pertajam keterampilan teknis melalui pengerjaan proyek studi kasus nyata.`],
-          catatan_singkat: `Tingkatkan kompetensimu secara terarah melalui modul-modul roadmap ${roleName} yang telah dirancang.`
-        };
-        engineUsed = 'structured-heuristic';
-      }
+      object = {
+        basis_penilaian: 'Berdasarkan profil role yang kamu pilih',
+        kesesuaian: matching.length > 0 ? matching.slice(0, 3) : [`Fondasi awal yang baik untuk memulai pemahaman peran ${roleName}.`],
+        kekurangan: gaps.length > 0 ? gaps.slice(0, 3) : [`Pertajam keterampilan teknis melalui pengerjaan proyek studi kasus nyata.`],
+        catatan_singkat: `Tingkatkan kompetensimu secara terarah melalui modul-modul roadmap ${roleName} yang telah dirancang.`
+      };
+      engineUsed = 'structured-heuristic';
     }
 
     return NextResponse.json({
+      isPurchased: true,
+      careerSlug,
       ai_engine_used: engineUsed,
       ...object
     });

@@ -28,19 +28,7 @@ const RequestSchema = z.object({
 });
 
 function redactRoadmap(roadmap: any[]) {
-  if (!Array.isArray(roadmap)) return roadmap;
-  return roadmap.map((phase, idx) => {
-    if (idx >= 2) {
-      return {
-        ...phase,
-        title: 'Lanjutan',
-        subtitle: 'Materi lanjutan untuk memaksimalkan potensimu.',
-        description: 'Pelajari materi lebih dalam dengan praktik industri nyata.',
-        modules: phase.modules.map((_: any, i: number) => `Materi Premium ${i + 1}`),
-      };
-    }
-    return phase;
-  });
+  return roadmap; // Semua 4 fase terbuka penuh
 }
 
 export async function POST(req: Request) {

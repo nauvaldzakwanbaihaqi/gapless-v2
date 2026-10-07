@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2, ChevronDown, RotateCcw, Lock, Home } from 'lucide-react';
 import { useGaplessContext } from '@/contexts/CareerContext';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
-import { isPlusUser, PLAN_CONFIG } from '@/config/plan';
+import { isPlusUser } from '@/config/plan';
 import Link from 'next/link';
 import type { CareerProfile } from '@/data/gaplessData';
 import type { RoadmapNode } from '@/contexts/CareerContext';

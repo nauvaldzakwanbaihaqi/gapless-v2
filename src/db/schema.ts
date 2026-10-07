@@ -448,3 +448,57 @@ export const affiliateClicks = pgTable("affiliate_clicks", {
 export const affiliateClicksRelations = relations(affiliateClicks, ({ one }) => ({
   user: one(users, { fields: [affiliateClicks.userId], references: [users.id] }),
 }));
+
+// ──────────────────────────────────────────────
+// PRODUK A LA CARTE & PRICING
+// ──────────────────────────────────────────────
+
+export const products = pgTable("products", {
+  key: text("key").primaryKey(), // 'gap_report'
+  name: text("name").notNull(),
+  price: integer("price").notNull().default(9900),
+  priceFormatted: text("price_formatted").notNull().default("Rp 9.900"),
+  description: text("description"),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+// ──────────────────────────────────────────────
+// TRANSAKSI PEMBELIAN USER (A LA CARTE)
+// ──────────────────────────────────────────────
+
+export const userPurchases = pgTable("user_purchases", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  productKey: text("product_key").notNull(),
+  careerSlug: text("career_slug"), // Nullable jika produk global, terisi jika per-career
+  amount: integer("amount").notNull(),
+  isMockPayment: boolean("is_mock_payment").default(true).notNull(),
+  purchasedAt: timestamp("purchased_at", { mode: "date" }).defaultNow().notNull(),
+  metadata: jsonb("metadata"),
+}, (t) => ({
+  userProductCareerUnique: uniqueIndex("user_product_career_unique")
+    .on(t.userId, t.productKey, t.careerSlug),
+}));
+
+export const userPurchasesRelations = relations(userPurchases, ({ one }) => ({
+  user: one(users, { fields: [userPurchases.userId], references: [users.id] }),
+}));
+
+// ──────────────────────────────────────────────
+// SUMBER BELAJAR TERKURASI (STATIS & TERVERIFIKASI)
+// ──────────────────────────────────────────────
+
+export const learningResources = pgTable("learning_resources", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  title: text("title").notNull(),
+  url: text("url").notNull(),
+  provider: text("provider").notNull(),
+  type: text("type").notNull(), // 'Dokumentasi' | 'Video' | 'Course' | 'Artikel'
+  skillTags: text("skill_tags").array().default([]),
+  level: text("level").default("Beginner"),
+  isFree: boolean("is_free").default(true).notNull(),
+  isVerified: boolean("is_verified").default(true).notNull(),
+  isBroken: boolean("is_broken").default(false).notNull(),
+  sortOrder: integer("sort_order").default(0),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});

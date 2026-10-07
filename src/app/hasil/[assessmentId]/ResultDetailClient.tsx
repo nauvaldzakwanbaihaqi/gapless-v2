@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { CAREER_PROFILES, getSkillGapData, TRAIT_META, Trait } from '@/data/gaplessData';
 import { AnalysisResultBlock } from '@/components/AnalysisResultBlock';
@@ -16,17 +16,31 @@ interface Props {
   traitScores: Record<string, number>;
 }
 
-export function ResultDetailClient({ resultId, selectedCareer, skillRatings, dominantTrait, quizType, traitScores }: Props) {
+export function ResultDetailClient({
+  resultId,
+  selectedCareer,
+  skillRatings,
+  dominantTrait,
+  quizType,
+  traitScores,
+}: Props) {
   const router = useRouter();
-  
+
   const [gapInsight, setGapInsight] = useState<GapInsight | null>(null);
+  const [isPurchased, setIsPurchased] = useState<boolean>(true);
+  const [freeSummary, setFreeSummary] = useState<{ matchingSkills: string[]; developmentSkills: string[] } | null>(null);
   const [isLoadingGapAi, setIsLoadingGapAi] = useState(false);
   const [chartReady, setChartReady] = useState(false);
 
-  // Find the career profile
+  // Find career profile
   const careerProfile = useMemo(() => {
-    return CAREER_PROFILES.find(c => c.title === selectedCareer) || null;
+    return CAREER_PROFILES.find((c) => c.title === selectedCareer) || null;
   }, [selectedCareer]);
+
+  const careerSlug = useMemo(() => {
+    if (careerProfile?.id) return careerProfile.id;
+    return selectedCareer.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+  }, [careerProfile, selectedCareer]);
 
   // Compute skill gap data
   const skillGapData = useMemo(() => {
@@ -53,99 +67,84 @@ export function ResultDetailClient({ resultId, selectedCareer, skillRatings, dom
     return () => clearTimeout(t);
   }, []);
 
-  useEffect(() => {
+  const fetchInsight = useCallback(async () => {
     if (!careerProfile || !skillGapData.length) return;
 
-    const fetchInsight = async () => {
-      setIsLoadingGapAi(true);
-      try {
-        const res = await fetch('/api/analyze-gap?ai=gemini', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            skillGapData,
-            roleName: careerProfile.title,
-          }),
-        });
+    setIsLoadingGapAi(true);
+    try {
+      const res = await fetch('/api/analyze-gap', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          skillGapData,
+          roleName: careerProfile.title,
+          careerSlug,
+        }),
+      });
 
-        if (res.ok) {
-          const data = await res.json();
-          setGapInsight(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch gap insight', err);
-      } finally {
-        setIsLoadingGapAi(false);
+      if (res.status === 402) {
+        const data = await res.json();
+        setIsPurchased(false);
+        setFreeSummary(data.freeSummary || null);
+      } else if (res.ok) {
+        const data = await res.json();
+        setIsPurchased(true);
+        setGapInsight(data);
       }
-    };
+    } catch (err) {
+      console.error('Failed to fetch gap insight', err);
+    } finally {
+      setIsLoadingGapAi(false);
+    }
+  }, [careerProfile, skillGapData, careerSlug]);
 
+  useEffect(() => {
     fetchInsight();
-  }, [careerProfile, skillGapData]);
+  }, [fetchInsight]);
 
   if (!careerProfile) {
     return (
       <div className="container mx-auto px-4 py-12 max-w-4xl flex justify-center">
-        <div className="glass-card p-8 max-w-md w-full text-center">
+        <div className="bg-white rounded-3xl p-8 max-w-md w-full text-center border border-slate-200">
           <h2 className="text-xl font-bold text-slate-800 mb-2">Pilihan Karier Belum Lengkap</h2>
           <p className="text-slate-500 text-sm mb-6">
-            Hasil asesmen kepribadian telah tersimpan, namun kamu belum memilih karier untuk dianalisis kesenjangan skill-nya.
+            Hasil asesmen kepribadian telah tercatat, namun kamu belum memilih rekomendasi karier spesifik.
           </p>
-          <a href="/assessment" className="btn-primary inline-flex">
-            Lanjutkan Asesmen
-          </a>
+          <button
+            onClick={() => router.push('/results')}
+            className="w-full py-2.5 px-4 rounded-xl bg-blue-600 text-white font-semibold text-xs"
+          >
+            Kembali ke Hasil
+          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-12 max-w-4xl">
-      {quizType === 'belum_tahu_minat' && dominantTrait && traitScores && (
-        <>
-          <div className="text-center mb-8">
-            <div
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full"
-              style={{
-                background: `${traitMetaColor}10`,
-                border: `1px solid ${traitMetaColor}25`,
-              }}
-            >
-              <span className="text-xs font-semibold" style={{ color: traitMetaColor }}>
-                Detail Kepribadian: {dominantTrait}
-              </span>
-            </div>
-          </div>
-
-          <ArchetypeReasoningBlock 
-            dominantTrait={dominantTrait} 
-            traitScores={traitScores} 
-            hideTitle={true}
-          />
-          
-          <div className="flex items-center justify-center my-16 opacity-50">
-            <div className="h-px w-24 bg-slate-300"></div>
-            <div className="mx-4 text-slate-400 text-sm font-semibold tracking-widest uppercase">Analisis Skill-Gap</div>
-            <div className="h-px w-24 bg-slate-300"></div>
-          </div>
-        </>
-      )}
-
-      <div className="mb-10 text-center">
-        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3">
-          {careerProfile.icon} {careerProfile.title}
-        </h2>
-        <p className="text-gray-500 text-base max-w-lg mx-auto">
-          Rekap hasil analisis kesenjangan (gap) antara profilmu saat ini dengan yang dibutuhkan.
-        </p>
+    <div className="container mx-auto px-4 sm:px-6 py-8 max-w-6xl">
+      {/* Archetype Reasoning Section */}
+      <div className="mb-8">
+        <ArchetypeReasoningBlock
+          dominantTrait={dominantTrait}
+          traitScores={traitScores}
+        />
       </div>
 
+      {/* Analysis Result (Radar + Gap Insight) */}
       <AnalysisResultBlock
         radarData={radarData}
         traitMetaColor={traitMetaColor}
         chartReady={chartReady}
         isLoadingGapAi={isLoadingGapAi}
         gapInsight={gapInsight}
-        showBackHome={true}
+        isPurchased={isPurchased}
+        freeSummary={freeSummary}
+        careerName={careerProfile.title}
+        careerSlug={careerSlug}
+        onPurchaseSuccess={() => {
+          fetchInsight();
+        }}
         roadmapHref={`/roadmap?assessmentId=${resultId}`}
       />
     </div>

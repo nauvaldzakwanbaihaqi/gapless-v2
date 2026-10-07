@@ -124,11 +124,11 @@ export function PassportClient({
     <div className="space-y-6">
       {/* Header Profile Passport */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm relative overflow-hidden">
-        <div className="absolute -right-12 -top-12 w-48 h-48 bg-gradient-to-br from-blue-100/50 to-indigo-100/30 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute -right-12 -top-12 w-48 h-48 bg-linear-to-br from-blue-100/50 to-indigo-100/30 rounded-full blur-2xl pointer-events-none" />
 
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-md">
+            <div className="w-16 h-16 rounded-2xl bg-linear-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-2xl shadow-md">
               {user.image ? (
                 <img
                   src={user.image}
@@ -147,7 +147,7 @@ export function PassportClient({
                   <Shield className="w-4 h-4" />
                 </span>
                 {isPlus ? (
-                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-sm">
+                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-sm">
                     PLUS
                   </span>
                 ) : (
@@ -277,16 +277,12 @@ export function PassportClient({
             <h2 className="text-base font-bold text-slate-900">Rincian 5 Kompetensi Soft Skill</h2>
             <p className="text-xs text-slate-500">Standar kompetensi kerja O*NET & industri terapan.</p>
           </div>
-          {!isPlus && (
-            <span className="text-xs font-medium px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 border border-amber-200 flex items-center gap-1">
-              <Lock className="w-3 h-3" /> Ringkasan (Plus untuk detail)
-            </span>
-          )}
+
         </div>
 
         <div className="space-y-4">
           {COMPETENCIES.map((comp) => {
-            const score = isPlus ? comp.base : Math.round(comp.base * 0.9);
+            const score = comp.base;
             return (
               <div key={comp.id} className="space-y-1.5">
                 <div className="flex items-center justify-between text-xs">
@@ -298,7 +294,7 @@ export function PassportClient({
                 </div>
                 <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500"
+                    className="h-full bg-linear-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500"
                     style={{ width: `${score}%` }}
                   />
                 </div>
@@ -307,20 +303,7 @@ export function PassportClient({
           })}
         </div>
 
-        {!isPlus && (
-          <div className="mt-5 p-4 rounded-xl bg-slate-50 border border-slate-200 text-center">
-            <p className="text-xs text-slate-600 mb-2">
-              Ingin melihat laporan analisis mendalam & saran perbaikan spesifik per kompetensi?
-            </p>
-            <Link
-              href="/pricing"
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition"
-            >
-              <Sparkles className="w-3 h-3" />
-              Buka Analisis Lengkap di Plus
-            </Link>
-          </div>
-        )}
+
       </div>
 
       {/* Portofolio Bukti & Kejujuran Klaim */}
