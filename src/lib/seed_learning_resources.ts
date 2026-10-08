@@ -142,10 +142,10 @@ export const SEED_RESOURCES = [
 
   // 4. Data Science & Machine Learning
   {
-    title: 'Kaggle Learn — Hands-on Python & Pandas Data Analysis',
-    url: 'https://www.kaggle.com/learn/pandas',
-    provider: 'Kaggle',
-    type: 'Course',
+    title: 'Pandas Official Documentation — Getting Started & Tutorials',
+    url: 'https://pandas.pydata.org/docs/getting_started/index.html',
+    provider: 'Pandas Official',
+    type: 'Dokumentasi',
     skillTags: ['pandas', 'data-analysis', 'python', 'data-science', 'statistics'],
     level: 'Beginner',
     isFree: true,
@@ -154,7 +154,7 @@ export const SEED_RESOURCES = [
   },
   {
     title: 'Scikit-Learn Machine Learning in Python Tutorial',
-    url: 'https://scikit-learn.org/stable/tutorial/basic/tutorial.html',
+    url: 'https://scikit-learn.org/stable/getting_started.html',
     provider: 'Scikit-Learn',
     type: 'Dokumentasi',
     skillTags: ['machine-learning', 'scikit-learn', 'ai', 'python', 'data-science'],
