@@ -17,6 +17,7 @@ import {
 } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { PassportClient } from './PassportClient';
+import { CAREER_PROFILES } from '@/data/gaplessData';
 
 export const metadata = { title: 'Skill Passport | Gapless' };
 
@@ -34,13 +35,29 @@ export default async function PassportPage() {
     .where(eq(users.id, session.user.id))
     .limit(1);
 
-  // Ambil asesmen terakhir untuk target career
-  const latestAssessment = await db
+  // Ambil semua asesmen user (diurutkan terbaru)
+  const userAssessments = await db
     .select()
     .from(assessmentResults)
     .where(eq(assessmentResults.userId, session.user.id))
-    .orderBy(desc(assessmentResults.createdAt))
-    .limit(1);
+    .orderBy(desc(assessmentResults.createdAt));
+
+  const formattedAssessments = userAssessments.map((a) => {
+    const matchedProfile = a.careerSlug ? CAREER_PROFILES.find((c) => c.id === a.careerSlug) : null;
+    const careerTitle = a.selectedCareer && a.selectedCareer.trim().length > 0
+      ? a.selectedCareer
+      : (matchedProfile?.title || (a.careerSlug ? a.careerSlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'General Career'));
+
+    return {
+      id: a.id,
+      quizType: a.quizType || 'belum_tahu_minat',
+      careerSlug: a.careerSlug,
+      careerTitle,
+      dominantTrait: a.dominantTrait,
+      isActive: a.isActive,
+      createdAt: a.createdAt.toISOString(),
+    };
+  });
 
   // Ambil Misi selesai
   const completedMissions = await db
@@ -79,7 +96,7 @@ export default async function PassportPage() {
 
   // Hitung Skor Sederhana Deterministik
   // Hard skill baseline dari assessment atau 65% + bonus per milestone
-  const baseHard = latestAssessment.length ? 70 : 50;
+  const baseHard = formattedAssessments.length ? 70 : 50;
   const completedMissionsCount = completedMissions.filter(m => m.progress.status === 'completed').length;
   const confirmedActivitiesCount = userActivities.filter(a => a.evidence.status === 'confirmed').length;
 
@@ -98,7 +115,8 @@ export default async function PassportPage() {
             email: session.user.email || '',
             image: session.user.image || null,
           }}
-          targetRole={latestAssessment[0]?.careerSlug ? latestAssessment[0].careerSlug.replace(/-/g, ' ').toUpperCase() : 'General Career'}
+          targetRole={formattedAssessments[0]?.careerTitle || 'General Career'}
+          assessments={formattedAssessments}
           hardSkillScore={hardScore}
           softSkillScore={softScore}
           completedMissions={completedMissions}

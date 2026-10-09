@@ -10,8 +10,10 @@ import {
   assessmentResults,
 } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
-import { Shield, CheckCircle2, Award, Briefcase, ExternalLink, Sparkles } from 'lucide-react';
+import { Shield, CheckCircle2, Award, Briefcase, ExternalLink, Sparkles, Crown, Compass, Target } from 'lucide-react';
 import Link from 'next/link';
+import { CAREER_PROFILES, TRAIT_META, Trait } from '@/data/gaplessData';
+import { hasActivePro } from '@/lib/payment_service';
 
 export const metadata = {
   title: 'Skill Passport Publik | Gapless',
@@ -50,6 +52,8 @@ export default async function PublicPassportPage({
 
   if (!user.length) notFound();
 
+  const isPro = await hasActivePro(userId);
+
   // Ambil asesmen target role
   const latestAssessment = await db
     .select()
@@ -78,9 +82,19 @@ export default async function PublicPassportPage({
     .innerJoin(activities, eq(activityEvidence.activityId, activities.id))
     .where(eq(activityEvidence.userId, userId));
 
-  const targetRole = latestAssessment[0]?.careerSlug
-    ? latestAssessment[0].careerSlug.replace(/-/g, ' ').toUpperCase()
-    : 'Career Explorer';
+  const matchedProfile = latestAssessment[0]?.careerSlug
+    ? CAREER_PROFILES.find((c) => c.id === latestAssessment[0].careerSlug)
+    : null;
+
+  const careerTitle = latestAssessment[0]?.selectedCareer && latestAssessment[0].selectedCareer.trim().length > 0
+    ? latestAssessment[0].selectedCareer
+    : (matchedProfile?.title || (latestAssessment[0]?.careerSlug ? latestAssessment[0].careerSlug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Career Explorer'));
+
+  const quizType = latestAssessment[0]?.quizType || 'sudah_tahu_minat';
+  const dominantTrait = latestAssessment[0]?.dominantTrait;
+  const traitMeta = dominantTrait && (dominantTrait in TRAIT_META)
+    ? TRAIT_META[dominantTrait as Trait]
+    : null;
 
   const softScore = Math.min(95, 60 + completedMissions.length * 4 + userActivities.length * 7);
   const hardScore = latestAssessment.length ? 78 : 65;
@@ -115,11 +129,52 @@ export default async function PublicPassportPage({
             )}
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">{user[0].name}</h1>
-            <p className="text-sm text-slate-400 mt-1 flex items-center gap-1.5">
-              <Briefcase className="w-4 h-4 text-slate-500" />
-              Target Karier: <strong className="text-indigo-300 font-semibold">{targetRole}</strong>
-            </p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-2xl font-bold text-white">{user[0].name}</h1>
+              {isPro ? (
+                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-linear-to-r from-blue-500 via-indigo-500 to-sky-400 text-white shadow-xs flex items-center gap-1">
+                  <Crown className="w-3 h-3" />
+                  PRO
+                </span>
+              ) : (
+                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">
+                  FREE
+                </span>
+              )}
+            </div>
+
+            {quizType === 'belum_tahu_minat' ? (
+              <div className="mt-1 space-y-1">
+                <div className="flex items-center gap-2 text-xs flex-wrap">
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30">
+                    <Compass className="w-3 h-3 text-indigo-400" />
+                    Jalur Eksplorasi Minat
+                  </span>
+                  {dominantTrait && (
+                    <span className="text-slate-300 text-xs">
+                      Arketipe: <strong className="text-white font-semibold">{dominantTrait} {traitMeta?.emoji || ''}</strong>
+                    </span>
+                  )}
+                </div>
+                <p className="text-sm text-slate-400 flex items-center gap-1.5 flex-wrap">
+                  <Briefcase className="w-4 h-4 text-slate-500 shrink-0" />
+                  <span>Rekomendasi Karier:</span>
+                  <strong className="text-indigo-300 font-semibold">{careerTitle}</strong>
+                </p>
+              </div>
+            ) : (
+              <div className="mt-1 space-y-1">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-400/30">
+                  <Target className="w-3 h-3 text-blue-400" />
+                  Jalur Terarah
+                </span>
+                <p className="text-sm text-slate-400 flex items-center gap-1.5 flex-wrap">
+                  <Briefcase className="w-4 h-4 text-slate-500 shrink-0" />
+                  <span>Target Karier:</span>
+                  <strong className="text-indigo-300 font-semibold">{careerTitle}</strong>
+                </p>
+              </div>
+            )}
           </div>
         </div>
 

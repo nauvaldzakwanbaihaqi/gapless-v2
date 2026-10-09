@@ -5,9 +5,11 @@ import { motion } from 'motion/react';
 import {
   Award, Shield, CheckCircle2, Clock, Sparkles, Lock,
   Share2, Download, ExternalLink, Copy, Check, Eye,
-  TrendingUp, BarChart3, Briefcase, UserCheck, AlertCircle, FileText
+  TrendingUp, BarChart3, Briefcase, UserCheck, AlertCircle, FileText,
+  Crown, Compass, Target
 } from 'lucide-react';
 import Link from 'next/link';
+import { TRAIT_META, Trait } from '@/data/gaplessData';
 
 interface MissionProgressItem {
   progress: {
@@ -56,6 +58,16 @@ interface PublicProfile {
   enabled: boolean;
 }
 
+export interface AssessmentInfo {
+  id: string;
+  quizType: string;
+  careerSlug: string | null;
+  careerTitle: string;
+  dominantTrait?: string | null;
+  isActive: boolean;
+  createdAt: string;
+}
+
 interface Props {
   user: {
     name: string;
@@ -63,6 +75,7 @@ interface Props {
     image: string | null;
   };
   targetRole: string;
+  assessments?: AssessmentInfo[];
   hardSkillScore: number;
   softSkillScore: number;
   completedMissions: MissionProgressItem[];
@@ -83,6 +96,7 @@ const COMPETENCIES = [
 export function PassportClient({
   user,
   targetRole,
+  assessments = [],
   hardSkillScore,
   softSkillScore,
   completedMissions,
@@ -94,6 +108,14 @@ export function PassportClient({
   const [profile, setProfile] = useState<PublicProfile | null>(initialPublicProfile);
   const [isTogglingLink, setIsTogglingLink] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [selectedAssessmentId, setSelectedAssessmentId] = useState<string>(
+    assessments.find(a => a.isActive)?.id || assessments[0]?.id || ''
+  );
+
+  const currentAssessment = assessments.find(a => a.id === selectedAssessmentId) || assessments[0];
+  const traitMeta = currentAssessment?.dominantTrait && (currentAssessment.dominantTrait in TRAIT_META)
+    ? TRAIT_META[currentAssessment.dominantTrait as Trait]
+    : null;
 
   const handleTogglePublicLink = async () => {
     setIsTogglingLink(true);
@@ -141,14 +163,15 @@ export function PassportClient({
             </div>
 
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{user.name}</h1>
                 <span className="p-1 rounded-md bg-blue-50 text-blue-600" title="Terverifikasi Gapless">
                   <Shield className="w-4 h-4" />
                 </span>
                 {isPro ? (
-                  <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-sm">
-                    PLUS
+                  <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-full bg-linear-to-r from-blue-600 via-indigo-600 to-sky-500 text-white shadow-xs flex items-center gap-1">
+                    <Crown className="w-3 h-3" />
+                    PRO
                   </span>
                 ) : (
                   <span className="text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">
@@ -156,10 +179,68 @@ export function PassportClient({
                   </span>
                 )}
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 mt-0.5 flex items-center gap-1.5">
-                <Briefcase className="w-3.5 h-3.5 text-slate-400" />
-                Target Karier: <span className="font-semibold text-slate-800">{targetRole}</span>
-              </p>
+
+              {/* Info Jalur Asesmen & Target/Rekomendasi Karier */}
+              {currentAssessment ? (
+                <div className="mt-1 space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap text-xs">
+                    {currentAssessment.quizType === 'belum_tahu_minat' ? (
+                      <>
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                          <Compass className="w-3 h-3 text-indigo-600" />
+                          Jalur Eksplorasi Minat
+                        </span>
+                        {currentAssessment.dominantTrait && (
+                          <span className="text-slate-600 text-xs">
+                            Arketipe: <strong className="text-slate-900 font-semibold">{currentAssessment.dominantTrait} {traitMeta?.emoji || ''}</strong>
+                          </span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                        <Target className="w-3 h-3 text-blue-600" />
+                        Jalur Terarah
+                      </span>
+                    )}
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-slate-600 flex items-center gap-1.5 flex-wrap">
+                    <Briefcase className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>{currentAssessment.quizType === 'belum_tahu_minat' ? 'Rekomendasi Karier:' : 'Target Karier:'}</span>
+                    <span className="font-semibold text-slate-900">{currentAssessment.careerTitle}</span>
+                  </p>
+                </div>
+              ) : (
+                <p className="text-xs sm:text-sm text-slate-600 mt-0.5 flex items-center gap-1.5">
+                  <Briefcase className="w-3.5 h-3.5 text-slate-400" />
+                  Target Karier: <span className="font-semibold text-slate-800">{targetRole}</span>
+                </p>
+              )}
+
+              {/* Selector jika user memiliki lebih dari 1 jalur asesmen */}
+              {assessments && assessments.length > 1 && (
+                <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Jalur Tes:</span>
+                  {assessments.map((a) => {
+                    const isSelected = currentAssessment?.id === a.id;
+                    const label = a.quizType === 'belum_tahu_minat' ? '🧭 Eksplorasi' : '🎯 Terarah';
+                    return (
+                      <button
+                        key={a.id}
+                        type="button"
+                        onClick={() => setSelectedAssessmentId(a.id)}
+                        className={`px-2.5 py-0.5 text-[11px] font-semibold rounded-lg transition-all cursor-pointer ${
+                          isSelected
+                            ? 'bg-blue-600 text-white shadow-xs'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {label} ({a.careerTitle.split('/')[0].trim()})
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 
