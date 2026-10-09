@@ -328,21 +328,668 @@ export const INDUSTRY_SIMULATIONS: Record<string, IndustrySimulation> = {
         hint: 'Gunakan prinsip MECE (Mutually Exclusive, Collectively Exhaustive) dalam penyusunan poin.'
       }
     ]
+  },
+
+  'startup-founder': {
+    careerTitle: 'Startup Founder',
+    careerSlug: 'startup-founder',
+    companyName: 'East Ventures',
+    companyLogoText: '💼 East Ventures',
+    companyColor: '#1E3A8A',
+    companyTagline: 'Venture Capital & Akselerator Ekosistem Startup Terbesar Asia Tenggara',
+    badgeLabel: 'East Ventures Founder Fellow',
+    simulationTitle: 'Simulasi Hari Pertama: Validasi Unit Economics, Peluncuran MVP, & Pitching Seed Round',
+    estimatedHours: '2 Jam',
+    difficulty: 'Advanced',
+    summary: 'Sebagai Founder yang sedang menginkubasi startup tahap awal, kamu dihadapkan pada keputusan krusial: menguji Product-Market Fit, menghitung runway keuangan, dan meyakinkan VC untuk pendanaan awal.',
+    backgroundStory: 'Startup kamu baru saja merilis prototipe aplikasi SaaS B2B untuk UMKM dengan modal bootstrapping tersisa 4 bulan. Kamu harus mengevaluasi metrik retensi pengguna awal, memperbaiki perbandingan CAC terhadap LTV, serta menyusun ringkasan pitch deck untuk dipresentasikan di hadapan partner East Ventures.',
+    skillsValidated: ['Product-Market Fit Validation', 'Unit Economics (CAC/LTV)', 'Pitching & Investor Relations', 'Strategic Decision Making'],
+    tasks: [
+      {
+        id: 1,
+        title: 'Task 1: Analisis Masalah Pasar & Validasi Hipotesis MVP',
+        duration: '25 Menit',
+        scenario: 'Dari 50 pengguna awal (early adopters), hanya 12 yang kembali menggunakan aplikasi di minggu kedua. Namun, ke-12 pengguna tersebut aktif menggunakan fitur "Pencatatan Piutang Otomatis" setiap hari.',
+        instructions: [
+          'Tentukan langkah paling strategis untuk memvalidasi apakah produk sudah mencapai Product-Market Fit atau butuh pivot fitur.'
+        ],
+        deliverableType: 'choice',
+        sampleQuestion: 'Keputusan strategis apa yang paling tepat diambil oleh founder pada fase ini?',
+        options: [
+          {
+            label: 'A',
+            text: 'Wawancara mendalam ke-12 pengguna aktif untuk memahami alasan utama mereka bertahan, lakukan doubling-down pada fitur piutang, dan eliminasi fitur lain yang tidak terpakai.',
+            isBest: true,
+            feedback: 'Tepat sekali! Fokus pada "super-users" yang mencintai fitur spesifik adalah kunci menemukan value proposition inti sebelum scale-up.'
+          },
+          {
+            label: 'B',
+            text: 'Segera membakar uang iklan (ads) besar-besaran untuk mencari 1.000 pengguna baru tanpa memperbaiki retensi.',
+            isBest: false,
+            feedback: 'Kurang tepat karena akan membuang modal (leaky bucket problem).'
+          },
+          {
+            label: 'C',
+            text: 'Mengubah seluruh produk menjadi marketplace baru tanpa mengolah data pengguna yang ada.',
+            isBest: false,
+            feedback: 'Pivot terburu-buru tanpa data validasi pelanggan sangat berisiko.'
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: 'Task 2: Perhitungan Unit Economics & Manajemen Burn Rate',
+        duration: '35 Menit',
+        scenario: 'Hitung kesehatan finansial: Biaya akuisisi pelanggan (CAC) saat ini Rp 150.000, rata-rata langganan per bulan Rp 50.000 dengan churn rate 10% per bulan (Customer Lifetime = 10 bulan, LTV = Rp 500.000). Kas saat ini Rp 120.000.000 dengan monthly burn rate Rp 30.000.000.',
+        instructions: [
+          'Evaluasi rasio LTV:CAC apakah sehat untuk startup tahap awal.',
+          'Hitung sisa runway dalam bulan dan berikan 2 strategi memperpanjang runway.'
+        ],
+        deliverableType: 'text',
+        placeholderAnswer: 'Analisis Unit Economics:\n1. Rasio LTV:CAC = 500.000 / 150.000 = 3.33x (Sehat, standar VC > 3x)\n2. Sisa Runway = 120jt / 30jt = 4 Bulan\n3. Strategi Optimasi Runway:\n- Mengurangi biaya server dengan beralih ke cloud credits startup...\n- Menawarkan diskon pembayaran tahunan di muka (upfront annual billing) untuk mendongkrak cash flow positif...',
+        hint: 'Rasio LTV:CAC > 3x umumnya dianggap benchmark ideal oleh investor tahap awal.'
+      },
+      {
+        id: 3,
+        title: 'Task 3: 3-Minute Elevator Pitch untuk Investor Seed Round',
+        duration: '20 Menit',
+        scenario: 'Tuliskan naskah Elevator Pitch ringkas (3 paragraf) untuk membuka sesi presentasi di depan Partner East Ventures.',
+        instructions: [
+          'Paragraf 1: Problem riil di pasar dan besaran peluang (TAM).',
+          'Paragraf 2: Solusi unik produk kamu dan traksi yang sudah dicapai.',
+          'Paragraf 3: Kebutuhan pendanaan (The Ask) dan target milestone berikutnya.'
+        ],
+        deliverableType: 'text',
+        placeholderAnswer: 'Elevator Pitch:\n"Di Indonesia, lebih dari 64 juta UMKM kehilangan rata-rata 15% pendapatan akibat pencatatan piutang manual yang tercecer. Kami hadir dengan sistem pembukuan piutang otomatis yang memangkas waktu rekonsiliasi hingga 80%...\nDalam 3 bulan pengujian, kami telah memproses transaksi lebih dari Rp 1,5 Miliar dengan retensi pengguna aktif bulanan 70%...\nKami mencari pendanaan awal sebesar $150.000 untuk memperluas tim teknologi dan mencapai 5.000 UMKM berbayar dalam 9 bulan ke depan."',
+        hint: 'Jelaskan angka traksi dan keunikan produk secara lugas dan percaya diri.'
+      }
+    ]
+  },
+
+  'product-manager': {
+    careerTitle: 'Product Manager',
+    careerSlug: 'product-manager',
+    companyName: 'GoTo Platform',
+    companyLogoText: '🟢 GoTo Product Org',
+    companyColor: '#00AA13',
+    companyTagline: 'Ekosistem Layanan On-Demand, Finansial & E-Commerce Terbesar',
+    badgeLabel: 'GoTo Product Specialist',
+    simulationTitle: 'Simulasi Hari Pertama: Prioritas Backlog RICE & Penyusunan PRD Fitur Baru',
+    estimatedHours: '2 Jam',
+    difficulty: 'Intermediate',
+    summary: 'Sebagai Product Manager baru di GoTo, kamu memimpin inisiatif peningkatan efisiensi checkout dengan menyeimbangkan kebutuhan bisnis, pengalaman pengguna, dan kapasitas tim engineering.',
+    backgroundStory: 'Data analitik menunjukkan tingkat drop-off di halaman checkout mencapai 24% karena metode pembayaran gagal loading. Tim Bisnis menginginkan fitur Buy-Now-Pay-Later baru, tim UX ingin penyederhanaan alur, sedangkan tim Engineering memiliki kendala technical debt. Tugasmu adalah menyusun skoring prioritas dan membuat Product Requirement Document (PRD) yang solid.',
+    skillsValidated: ['RICE Framework Prioritization', 'Product Requirement Document (PRD)', 'Cross-Functional Stakeholder Management', 'North Star Metric Tracking'],
+    tasks: [
+      {
+        id: 1,
+        title: 'Task 1: Prioritas Backlog Menggunakan Metode RICE',
+        duration: '25 Menit',
+        scenario: 'Terdapat 3 kandidat fitur kuartal ini: (1) One-Click Checkout [Reach: 80k, Impact: 3, Conf: 80%, Effort: 2], (2) Gamifikasi Poin [Reach: 20k, Impact: 2, Conf: 50%, Effort: 4], (3) Dark Mode [Reach: 50k, Impact: 1, Conf: 90%, Effort: 1].',
+        instructions: [
+          'Gunakan rumus RICE = (Reach * Impact * Confidence) / Effort untuk menentukan fitur urutan teratas.'
+        ],
+        deliverableType: 'choice',
+        sampleQuestion: 'Fitur mana yang memiliki skor RICE tertinggi dan wajib dieksekusi pertama pada sprint mendatang?',
+        options: [
+          {
+            label: 'A',
+            text: 'One-Click Checkout (Skor RICE: 96.000) — Memberikan dampak bisnis dan jangkauan terbesar terhadap peningkatan conversion rate.',
+            isBest: true,
+            feedback: 'Tepat sekali! One-Click Checkout menghasilkan skor RICE tertinggi (96.000) dan menjawab langsung masalah drop-off checkout.'
+          },
+          {
+            label: 'B',
+            text: 'Dark Mode (Skor RICE: 45.000) — Karena paling cepat dikerjakan meskipun dampaknya minim terhadap metrik transaksi.',
+            isBest: false,
+            feedback: 'Kurang tepat karena dampak bisnisnya sangat kecil dibandingkan checkout drop-off.'
+          },
+          {
+            label: 'C',
+            text: 'Gamifikasi Poin (Skor RICE: 5.000) — Membutuhkan effort tinggi dengan tingkat keyakinan rendah.',
+            isBest: false,
+            feedback: 'Fitur ini memiliki skor RICE terendah dan menyita kapasitas engineering.'
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: 'Task 2: Penulisan User Story & Kriteria Penerimaan (Acceptance Criteria)',
+        duration: '35 Menit',
+        scenario: 'Tuliskan User Story dan Kriteria Penerimaan lengkap untuk fitur "Penyimpanan Kartu & 1-Click Pay" bagi pengguna yang sudah terverifikasi.',
+        instructions: [
+          'Gunakan format: As a [User], I want to [Action], So that [Benefit].',
+          'Tuliskan minimal 3 Acceptance Criteria dengan format Given-When-Then.'
+        ],
+        deliverableType: 'text',
+        placeholderAnswer: 'User Story:\n"Sebagai pengguna aktif GoTo yang sering bertransaksi, saya ingin menyimpan metode pembayaran utama dan menyelesaikan pembelian dengan 1 klik, sehingga saya tidak perlu memasukkan ulang OTP/detail pembayaran setiap belanja."\n\nAcceptance Criteria:\n1. Given pengguna telah memverifikasi biometrik/PIN, When memilih 1-Click Pay, Then transaksi langsung diproses dalam waktu < 2 detik.\n2. Given saldo tidak mencukupi, When tombol ditekan, Then muncul modal konfirmasi top-up instan tanpa menutup keranjang.\n3. Given terjadi kegagalan jaringan, When transaksi timeout, Then status transaksi ditandai pending dan tidak mendebit saldo ganda.',
+        hint: 'Pastikan edge case seperti saldo tidak cukup dan timeout jaringan tertulis jelas.'
+      },
+      {
+        id: 3,
+        title: 'Task 3: Penentuan North Star Metric & Peluncuran Rollout Bertahap',
+        duration: '20 Menit',
+        scenario: 'Tentukan 1 North Star Metric utama untuk fitur ini dan rancang fase peluncuran (A/B testing rollout) untuk memitigasi risiko bug.',
+        instructions: [
+          'Sebutkan North Star Metric dan guardrail metric (metrik pengaman).',
+          'Jelaskan fase alokasi traffic (misal 5% -> 25% -> 100%).'
+        ],
+        deliverableType: 'text',
+        placeholderAnswer: 'Metrik & Strategi Rollout:\n- North Star Metric: Checkout Conversion Rate (target naik dari 76% menjadi 83%).\n- Guardrail Metric: Transaction Error Rate (< 0.1%) dan Customer Support Ticket Rate.\n- Fase Rollout:\n  * Hari 1-3: Internal Dogfooding (karyawan GoTo)\n  * Hari 4-7: 5% random users untuk observasi error monitoring\n  * Minggu ke-2: 25% traffic jika crash rate normal\n  * Minggu ke-3: 100% full release ke seluruh pengguna.',
+        hint: 'Guardrail metric penting agar PM tidak hanya mengejar pertumbuhan namun juga menjaga stabilitas sistem.'
+      }
+    ]
+  },
+
+  'ai-ml-engineer': {
+    careerTitle: 'AI/ML Engineer / Machine Learning Engineer',
+    careerSlug: 'ai-ml-engineer',
+    companyName: 'DANA AI Lab',
+    companyLogoText: '⚡ DANA Fintech Lab',
+    companyColor: '#118EEA',
+    companyTagline: 'Pusat Inovasi AI & Dompet Digital Terpercaya Indonesia',
+    badgeLabel: 'DANA AI Engineer Certified',
+    simulationTitle: 'Simulasi Hari Pertama: Optimasi Latensi Model Deteksi Fraud & MLOps Pipeline',
+    estimatedHours: '2 Jam',
+    difficulty: 'Advanced',
+    summary: 'Sebagai AI/ML Engineer di DANA, kamu ditugaskan memperbarui model deteksi transaksi mencurigakan agar mampu memproses 20.000 transaksi/detik dengan latensi di bawah 50ms tanpa meningkatkan false positive.',
+    backgroundStory: 'Sistem deteksi fraud rule-based lama mulai kewalahan menghadapi pola serangan bot baru. Kamu ditugaskan mendeploy model klasifikasi ke production, menyeimbangkan trade-off Precision vs Recall, serta membangun pipeline monitoring data drift otomatis.',
+    skillsValidated: ['Model Performance Optimization', 'MLOps & Inference Latency', 'Feature Engineering for Fraud Detection', 'Explainable AI (SHAP/LIME)'],
+    tasks: [
+      {
+        id: 1,
+        title: 'Task 1: Evaluasi Metrik & Penentuan Threshold Klasifikasi Fraud',
+        duration: '25 Menit',
+        scenario: 'Dalam sistem pembayaran digital, meloloskan transaksi fraud (False Negative) menyebabkan kerugian finansial langsung bagi nasabah, sedangkan memblokir transaksi nasabah sah (False Positive) merusak reputasi aplikasi.',
+        instructions: [
+          'Tentukan metrik evaluasi utama dan strategi penentuan threshold probabilitas model.'
+        ],
+        deliverableType: 'choice',
+        sampleQuestion: 'Metrik evaluasi mana yang wajib diutamakan pada model fraud detection dengan class imbalance 99.8% transaksi normal : 0.2% fraud?',
+        options: [
+          {
+            label: 'A',
+            text: 'Mengoptimalkan PR-AUC (Precision-Recall AUC) dengan prioritas Recall tinggi (misal 95%), lalu menerapkan secondary challenge (verifikasi biometrik/OTP) pada zona probabilitas abu-abu untuk menekan dampak False Positive.',
+            isBest: true,
+            feedback: 'Sangat tepat! Pada data sangat imbalanced, akurasi umum menyesatkan. PR-AUC dan Recall tinggi didukung step-up authentication menjaga keamanan dan kenyamanan.'
+          },
+          {
+            label: 'B',
+            text: 'Hanya melihat Accuracy score 99.8% karena model yang menebak semua normal sudah memiliki akurasi tinggi.',
+            isBest: false,
+            feedback: 'Ini adalah jebakan akurasi (accuracy paradox) yang mematikan pada data imbalance.'
+          },
+          {
+            label: 'C',
+            text: 'Menolak semua transaksi di atas Rp 500.000 tanpa menggunakan model ML.',
+            isBest: false,
+            feedback: 'Ini pendekatan naif yang menghancurkan transaksi e-wallet.'
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: 'Task 2: Arsitektur Model Serving Rendah Latensi & Monitoring Drift',
+        duration: '35 Menit',
+        scenario: 'Model XGBoost saat ini memiliki waktu inferensi 140ms, melampaui SLA payment gateway yang mewajibkan respon < 50ms.',
+        instructions: [
+          'Jelaskan 2 teknik optimasi model (misal: quantization, model compilation ONNX/TensorRT, caching feature store).',
+          'Bagaimana cara mendeteksi jika pola transaksi di bulan depan mengalami Data Drift?'
+        ],
+        deliverableType: 'text',
+        placeholderAnswer: 'Arsitektur Serving & Monitoring:\n1. Optimasi Latensi Inferensi:\n- Mengonversi model ke ONNX Runtime dengan optimasi graf C++ untuk memangkas latensi menjadi < 25ms.\n- Pre-computing fitur agregasi pengguna di Redis Feature Store (Feast) sehingga inferensi tidak melakukan query lambat ke database relational.\n2. Deteksi Data Drift:\n- Menerapkan uji Kolmogorov-Smirnov (KS-Test) dan Population Stability Index (PSI) harian pada distribusi fitur input.\n- Jika nilai PSI > 0.2, trigger alert dan jalankan pipeline re-training otomatis dengan dataset 14 hari terakhir.',
+        hint: 'Gunakan terminologi Feature Store, ONNX Runtime, dan Population Stability Index (PSI).'
+      },
+      {
+        id: 3,
+        title: 'Task 3: Strategi Mitigasi Kasus False Positive bagi Nasabah VIP',
+        duration: '20 Menit',
+        scenario: 'Seorang nasabah setia berbelanja dalam jumlah besar di luar negeri dan transaksinya sempat diblokir oleh model. Bagaimana strategi Explainable AI (SHAP value) untuk memberikan penjelasan transparan?',
+        instructions: [
+          'Jelaskan bagaimana SHAP value membantu tim Risk Operations memahami alasan model mengambil keputusan dalam hitungan detik.'
+        ],
+        deliverableType: 'text',
+        placeholderAnswer: 'Penerapan Explainable AI:\n- Sistem menampilkan waterfall chart SHAP values pada dashboard agen Customer Service: "Alasan pemblokiran sementara: Transaksi dari IP negara baru berkontribusi +42% terhadap skor risiko, nominal transaksi 5x di atas rata-rata berkontribusi +30%".\n- Agen CS dapat mengonfirmasi ke nasabah dan memasukkan device ke whitelist terpercaya dengan 1 klik, memulihkan akses tanpa merusak kredibilitas sistem keamanan.',
+        hint: 'Jelaskan bagaimana interpretasi model meningkatkan kecepatan respon tim operasional.'
+      }
+    ]
+  },
+
+  'data-scientist': {
+    careerTitle: 'Data Scientist',
+    careerSlug: 'data-scientist',
+    companyName: 'Bank Mandiri Digital',
+    companyLogoText: '🏦 Mandiri Analytics',
+    companyColor: '#003D79',
+    companyTagline: 'Transformasi Perbankan Digital Terdepan Indonesia',
+    badgeLabel: 'Mandiri Data Science Fellow',
+    simulationTitle: 'Simulasi Hari Pertama: Membangun Model Prediksi Churn Nasabah & Evaluasi Lift Curve',
+    estimatedHours: '2 Jam',
+    difficulty: 'Intermediate',
+    summary: 'Sebagai Data Scientist di Bank Mandiri, kamu membedah pola transaksi jutaan nasabah tabungan digital untuk memprediksi probabilitas nasabah yang akan berhenti aktif (churn) dalam 60 hari ke depan.',
+    backgroundStory: 'Tingkat retensi nasabah aplikasi digital menurun 3.2% pada kuartal lalu. Tim CRM membutuhkan skor risiko churn per nasabah agar promo cashback dapat disalurkan secara tepat sasaran ke nasabah yang berisiko tinggi beralih, bukan disebar acak.',
+    skillsValidated: ['Predictive Modeling', 'Feature Engineering', 'Model Evaluation (AUC-ROC/Lift)', 'Business Impact Estimation'],
+    tasks: [
+      {
+        id: 1,
+        title: 'Task 1: Penanganan Imbalanced Dataset & Pemilihan Algoritma Model',
+        duration: '25 Menit',
+        scenario: 'Data menunjukkan rasio nasabah churn sebesar 8% berbanding 92% nasabah aktif. Kamu perlu menyiapkan teknik sampling dan algoritma yang tahan terhadap skewness data.',
+        instructions: [
+          'Pilih teknik sampling dan model prediktif yang paling tepat.'
+        ],
+        deliverableType: 'choice',
+        sampleQuestion: 'Kombinasi metode data science apa yang paling efektif untuk memprediksi churn nasabah?',
+        options: [
+          {
+            label: 'A',
+            text: 'Menerapkan SMOTE / Class Weights tuning pada LightGBM dengan Stratified K-Fold Cross Validation dan evaluasi metrik AUC-ROC serta Top-Decile Lift.',
+            isBest: true,
+            feedback: 'Sangat tepat! LightGBM efisien menangani data tabular jutaan baris, dan Stratified K-Fold memastikan proporsi churn terjaga di tiap fold validasi.'
+          },
+          {
+            label: 'B',
+            text: 'Menggunakan K-Means Clustering tanpa label dan membagi nasabah menjadi 2 kluster secara acak.',
+            isBest: false,
+            feedback: 'Kurang tepat karena clustering adalah unsupervised learning yang tidak dioptimalkan untuk prediksi klasifikasi terarah.'
+          },
+          {
+            label: 'C',
+            text: 'Menghapus 90% data nasabah aktif agar jumlahnya sama dengan data churn.',
+            isBest: false,
+            feedback: 'Random undersampling ekstrem membuang informasi berharga dari mayoritas data.'
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: 'Task 2: Feature Selection & Validasi Lintas Silang',
+        duration: '35 Menit',
+        scenario: 'Sebutkan 3 fitur turunan (engineered features) dari data riwayat transaksi bank yang memiliki daya prediksi terkuat terhadap risiko churn nasabah.',
+        instructions: [
+          'Tuliskan definisi matematis/logika dari ketiga fitur tersebut.',
+          'Jelaskan mengapa fitur tersebut mengindikasikan penurunan minat nasabah.'
+        ],
+        deliverableType: 'text',
+        placeholderAnswer: 'Fitur Prediktif Utama:\n1. RFM Score (Recency, Frequency, Monetary): Jumlah hari sejak transaksi terakhir (Recency) di aplikasi Livin\'. Jika Recency > 30 hari, korelasi churn sangat kuat.\n2. Balance Depletion Velocity: Rasio rata-rata saldo 30 hari terakhir dibanding 90 hari sebelumnya (Saldo Akhir / Saldo Awal). Nilai < 0.3 menandakan pemindahan dana ke bank lain.\n3. Bill Payment Variety Drop: Penurunan jenis transaksi rutin (misal token PLN, pulsa, e-wallet top up) dari biasanya 4 variasi menjadi 0.',
+        hint: 'Fokuskan pada perubahan kebiasaan bertransaksi (trend of usage decline).'
+      },
+      {
+        id: 3,
+        title: 'Task 3: Konversi Skor Model Menjadi Strategi Penawaran CRM Terarah',
+        duration: '20 Menit',
+        scenario: 'Model telah menghasilkan probabilitas churn (0.0 s.d. 1.0) untuk 1.000.000 nasabah. Tim Marketing memiliki anggaran promo terbatas untuk 100.000 nasabah.',
+        instructions: [
+          'Bagaimana cara mengalokasikan anggaran promosi agar menghasilkan return on investment (ROI) terbesar berdasarkan output model?'
+        ],
+        deliverableType: 'text',
+        placeholderAnswer: 'Strategi Penyaluran Berbasis Uplift:\n- Urutkan nasabah berdasarkan probabilitas churn (decile 1 s.d. 10).\n- Targetkan desil ke-2 dan ke-3 (probabilitas churn 40-70% / zona "dapat diselamatkan"), bukan desil ke-1 yang sudah pasti pindah (lost causes) atau desil 9-10 yang pasti loyal (sure things).\n- Jalankan A/B test (50k treatment promo vs 50k control) untuk mengukur incremental retention lift secara akurat.',
+        hint: 'Jelaskan konsep Uplift Modeling (Persuadables vs Sure Things).'
+      }
+    ]
+  },
+
+  'community-manager': {
+    careerTitle: 'Community Manager / Digital Marketing Specialist',
+    careerSlug: 'community-manager',
+    companyName: 'Dicoding Indonesia',
+    companyLogoText: '🌐 Dicoding Community',
+    companyColor: '#2D3E50',
+    companyTagline: 'Komunitas Developer & Jaringan Talenta Digital Terbesar di Indonesia',
+    badgeLabel: 'Dicoding Community Champion',
+    simulationTitle: 'Simulasi Hari Pertama: Manajemen Krisis Komunitas & Re-Engagement Member Dorman',
+    estimatedHours: '1.5 Jam',
+    difficulty: 'Intermediate',
+    summary: 'Sebagai Community Manager di Dicoding, kamu bertanggung jawab menjaga atmosfer diskusi yang sehat, menyelesaikan isu miskomunikasi publik, dan meningkatkan aktivitas anggota komunitas belajar teknologi.',
+    backgroundStory: 'Di kanal Discord dan grup Telegram dengan 150.000 anggota, muncul perdebatan panas seputar perubahan silabus beasiswa coding yang memicu komentar negatif dari sebagian peserta. Selain menangani krisis komunikasi, kamu harus merancang program aktivasi bulanan yang memicu keterlibatan aktif.',
+    skillsValidated: ['Community Crisis Management', 'Empathetic Communication', 'Event & Activation Design', 'Community Health Metrics (NPS/Retention)'],
+    tasks: [
+      {
+        id: 1,
+        title: 'Task 1: Penanganan Krisis Komunikasi & Moderasi Konflik Publik',
+        duration: '25 Menit',
+        scenario: 'Beberapa member vokal memprotes pengumuman kelulusan di kanal publik dan mulai memprovokasi anggota lain untuk memboikot acara komunitas.',
+        instructions: [
+          'Pilih langkah de-eskalasi yang paling tepat sesuai kode etik community management.'
+        ],
+        deliverableType: 'choice',
+        sampleQuestion: 'Tindakan apa yang pertama kali harus dilakukan oleh Community Manager?',
+        options: [
+          {
+            label: 'A',
+            text: 'Merespon cepat di kanal publik dengan nada empatik, akui keresahan peserta tanpa defensif, sediakan FAQ transparan, dan ajak perwakilan member berdiskusi langsung di kanal privat untuk mendengarkan masukan.',
+            isBest: true,
+            feedback: 'Sangat profesional! Menghapus pesan secara sepihak hanya memicu kemarahan, sedangkan transparansi dan empati meredakan ketegangan.'
+          },
+          {
+            label: 'B',
+            text: 'Langsung membanned semua anggota yang mengkritik dan mengunci chat room selama 1 bulan.',
+            isBest: false,
+            feedback: 'Langkah ini otoriter dan akan merusak kepercayaan komunitas secara permanen.'
+          },
+          {
+            label: 'C',
+            text: 'Mengabaikan protes dan berharap percakapan akan mereda dengan sendirinya.',
+            isBest: false,
+            feedback: 'Mengabaikan isu krisis membuat sentimen negatif menyebar ke media sosial luar.'
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: 'Task 2: Desain Program Re-Engagement Anggota Dorman',
+        duration: '35 Menit',
+        scenario: 'Sebanyak 60% member komunitas tergolong pasif (dorman) dan tidak pernah mengirim pesan dalam 60 hari terakhir. Rancang 1 program inisiatif aktivasi interaktif 14 hari.',
+        instructions: [
+          'Sebutkan nama program, konsep kegiatan, dan insentif yang ditawarkan.',
+          'Bagaimana cara memfasilitasi interaksi antar sesama member?'
+        ],
+        deliverableType: 'text',
+        placeholderAnswer: 'Program Aktivasi Komunitas:\n- Nama Program: "14-Day Code & Share Sprint"\n- Konsep: Tantangan harian mini 30 menit (misal: "Share baris kode favoritmu", "Review portofolio teman sebelah").\n- Mekanisme: Dibuat grup belajar kecil (study pods 5 orang) agar anggota pemalu merasa nyaman berdiskusi di lingkaran mini.\n- Insentif: Badge eksklusif Discord "Active Sprinter" + e-certificate partisipasi resmi Dicoding bagi yang konsisten 10 hari.',
+        hint: 'Program kelompok kecil (peer study pods) terbukti efektif mengaktifkan anggota yang pasif.'
+      },
+      {
+        id: 3,
+        title: 'Task 3: Dashboard Metrik Kesehatan Komunitas & Laporan Bulanan',
+        duration: '20 Menit',
+        scenario: 'Tuliskan ringkasan metrik kesehatan komunitas yang akan kamu laporkan kepada VP of Growth.',
+        instructions: [
+          'Sertakan metrik Daily Active Members (DAM), Net Promoter Score (NPS), dan rasio User Generated Content (UGC).'
+        ],
+        deliverableType: 'text',
+        placeholderAnswer: 'Laporan Kesehatan Komunitas Bulanan:\n1. Engagement: DAM naik 18% (mencapai 14.200 member aktif harian).\n2. Konten Mandiri: Rasio pertanyaan yang dijawab oleh sesama member (peer-to-peer resolution) mencapai 68%, mengurangi beban fasilitator internal.\n3. Kepuasan Komunitas: Net Promoter Score (NPS) berada di angka +62 (kategori Excellent).\n4. Rekomendasi: Membuka program Community Ambassador untuk melatih 20 moderator sukarela dari member teraktif.',
+        hint: 'Fokuskan pada kemampuan komunitas untuk saling membantu secara mandiri (organic self-sustenance).'
+      }
+    ]
+  },
+
+  'hr-business-partner': {
+    careerTitle: 'HR Business Partner',
+    careerSlug: 'hr-business-partner',
+    companyName: 'Astra International',
+    companyLogoText: '🏢 Astra People & Culture',
+    companyColor: '#0A4DA2',
+    companyTagline: 'Inspirasi Bangsa melalui Keunggulan Manajemen Talenta Korporasi',
+    badgeLabel: 'Astra HRBP Partner',
+    simulationTitle: 'Simulasi Hari Pertama: Analisis Retensi Karyawan Kunci & Perancangan Succession Plan',
+    estimatedHours: '2 Jam',
+    difficulty: 'Intermediate',
+    summary: 'Sebagai HR Business Partner di Astra, kamu mendampingi pimpinan divisi operasional untuk mendiagnosis tingginya perputaran (turnover) talenta teknologi dan merancang rencana suksesi karier jangka panjang.',
+    backgroundStory: 'Dalam 6 bulan terakhir, 15% engineer level senior mengundurkan diri ke perusahaan kompetitor. Hasil exit interview menunjukkan isu bukan hanya gaji, melainkan kejelasan jenjang karier dan burnout. Kamu diminta menyusun audit masalah orang (people analytics) dan solusi terintegrasi.',
+    skillsValidated: ['People Analytics & Turnover Diagnosis', 'Succession Planning', 'Talent Retention Strategy', 'Executive Stakeholder Consultation'],
+    tasks: [
+      {
+        id: 1,
+        title: 'Task 1: Diagnosis Akar Masalah Turnover Karyawan (9-Box Grid Analysis)',
+        duration: '25 Menit',
+        scenario: 'Manajer Divisi mengusulkan menaikkan gaji semua orang sebesar 20% tanpa melihat evaluasi performa, namun anggaran HRBP terbatas.',
+        instructions: [
+          'Gunakan kerangka matriks 9-Box Grid (Performance vs Potential) untuk mengalokasikan anggaran retensi secara efektif.'
+        ],
+        deliverableType: 'choice',
+        sampleQuestion: 'Kelompok talenta mana yang wajib diprioritaskan untuk intervensi retensi dan succession planning?',
+        options: [
+          {
+            label: 'A',
+            text: 'Fokuskan paket retensi strategis (Retention Bonus & Fast-track Career Path) pada kuadran "High Performance - High Potential" (Star Talent) dan siapkan mentoring bagi calon suksesor peran kritikal.',
+            isBest: true,
+            feedback: 'Sangat tepat! Menaikkan gaji merata tidak menyelesaikan akar masalah, sedangkan memprioritaskan Star Talent melindungi kontinuitas proyek vital bisnis.'
+          },
+          {
+            label: 'B',
+            text: 'Memberikan seluruh bonus retensi kepada karyawan berkinerja rendah agar mereka termotivasi.',
+            isBest: false,
+            feedback: 'Salah sasaran dan akan menciptakan rasa ketidakadilan (demotivasi) bagi karyawan berprestasi tinggi.'
+          },
+          {
+            label: 'C',
+            text: 'Membiarkan karyawan kunci mengundurkan diri dan langsung merekrut fresh graduate pengganti.',
+            isBest: false,
+            feedback: 'Kehilangan institutional knowledge senior engineer menimbulkan biaya rekrutmen dan onboarding yang jauh lebih mahal.'
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: 'Task 2: Penyusunan Intervensi Retensi & Jalur Karier Dual-Ladder',
+        duration: '35 Menit',
+        scenario: 'Banyak technical specialist enggan dipromosikan ke jabatan struktural manajerial karena tidak ingin mengurus administrasi dan rapat seharian. Rancang jalur karier dual-track (Individual Contributor vs Management Path).',
+        instructions: [
+          'Rancang skema jenjang karier paralel (IC Track: Staff -> Principal -> Fellow vs Management Track: Lead -> Manager -> Director).',
+          'Sertakan benefit non-finansial untuk meredakan burnout (misal flexible working arrangement, budget konferensi tahunan).'
+        ],
+        deliverableType: 'text',
+        placeholderAnswer: 'Skema Jalur Karier Ganda (Dual-Ladder Career Track):\n1. Individual Contributor (IC) Path: Memberikan kompensasi dan pengakuan setara manajerial (Senior Engineer -> Staff Engineer setara Manager -> Principal Engineer setara GM) tanpa beban birokrasi people-management.\n2. Work-Life Balance & Wellness:\n- Kebijakan Core Working Hours (10.00 - 16.00) dan No-Meeting Friday Afternoon.\n- Tunjangan pengembangan diri Rp 10jt/tahun untuk sertifikasi industri global.\n3. Transparent Promotion Criteria: Rubrik penilaian kompetensi transparan yang dapat diakses seluruh karyawan.',
+        hint: 'Jelaskan bagaimana jalur IC mempertahankan pakar teknis terbaik tanpa memaksakan peran manajerial.'
+      },
+      {
+        id: 3,
+        title: 'Task 3: Konsultasi dan Penyelarasan Strategi Bersama Kepala Divisi',
+        duration: '20 Menit',
+        scenario: 'Susun ringkasan rekomendasi 3 poin yang akan kamu sampaikan dalam rapat 1-on-1 dengan Division Head untuk menyepakati target retensi kuartal depan.',
+        instructions: [
+          'Tuliskan poin aksi konkret, penanggung jawab, dan metrik keberhasilan (Key Success Metric).'
+        ],
+        deliverableType: 'text',
+        placeholderAnswer: 'Ringkasan Konsultasi Eksekutif HRBP:\n1. Peluncuran Dual-Ladder Career Framework paling lambat akhir bulan depan (PIC: HRBP & Tech Lead).\n2. Stay Interview terjadwal setiap 3 bulan untuk 25 karyawan Star Talent guna memantau aspirasi secara proaktif.\n3. Metrik Sukses: Penurunan turnover karyawan senior dari 15% menjadi di bawah 5% dalam 12 bulan ke depan, dengan Employee Engagement Index naik minimal 10 poin.',
+        hint: 'Sebagai HRBP, tunjukkan pemahaman bisnis yang kuat dan solusi berorientasi dampak terukur.'
+      }
+    ]
+  },
+
+  'research-scientist': {
+    careerTitle: 'Research & Development Scientist',
+    careerSlug: 'research-scientist',
+    companyName: 'Kalbe Farma R&D',
+    companyLogoText: '🔬 Kalbe Innovation Center',
+    companyColor: '#58A618',
+    companyTagline: 'Inovasi Sains & Teknologi Terdepan untuk Kesehatan Indonesia',
+    badgeLabel: 'Kalbe Research Fellow',
+    simulationTitle: 'Simulasi Hari Pertama: Desain Metodologi Eksperimen & Validasi Signifikansi Data',
+    estimatedHours: '2 Jam',
+    difficulty: 'Advanced',
+    summary: 'Sebagai Research Scientist di laboratorium R&D Kalbe, kamu merancang protokol uji laboratorium untuk memvalidasi stabilitas dan efektivitas formulasi bahan aktif baru.',
+    backgroundStory: 'Tim riset menemukan kandidat formulasi suplemen herbal yang menjanjikan, namun diperlukan uji stabilitas dipercepat (accelerated stability testing) dan validasi statistik sebelum melangkah ke tahap uji klinis dan pengajuan paten.',
+    skillsValidated: ['Experimental Design (DoE)', 'Statistical Hypothesis Testing', 'Regulatory Compliance & SOP', 'Scientific Data Interpretation'],
+    tasks: [
+      {
+        id: 1,
+        title: 'Task 1: Perumusan Hipotesis Nol dan Desain Kontrol Eksperimen',
+        duration: '25 Menit',
+        scenario: 'Kamu menguji apakah formulasi baru X memiliki laju degradasi senyawa aktif yang lebih lambat dibanding formulasi standar pada suhu 40°C dan kelembaban 75% RH selama 6 bulan.',
+        instructions: [
+          'Pilih perumusan hipotesis statistik dan desain eksperimen (Design of Experiments) yang valid secara ilmiah.'
+        ],
+        deliverableType: 'choice',
+        sampleQuestion: 'Desain eksperimen laboratorium mana yang memenuhi standar Good Laboratory Practice (GLP)?',
+        options: [
+          {
+            label: 'A',
+            text: 'Menyusun kelompok kontrol negatif (placebo), kontrol positif (standar industri), dan replikasi pengujian triplo (n=3) secara acak (Randomized Block Design) untuk mengontrol variasi instrumen.',
+            isBest: true,
+            feedback: 'Sempurna! Replikasi triplo dan adanya kontrol positif/negatif adalah fondasi validitas ilmiah untuk menghindari bias instrumen.'
+          },
+          {
+            label: 'B',
+            text: 'Hanya menguji 1 sampel formulasi baru tanpa pembanding kontrol untuk menghemat bahan reagen.',
+            isBest: false,
+            feedback: 'Hasil tidak akan dapat divalidasi karena tidak memiliki standar komparasi kontrol ilmiah.'
+          },
+          {
+            label: 'C',
+            text: 'Mengubah parameter suhu pengujian setiap hari secara acak tanpa pencatatan logbook.',
+            isBest: false,
+            feedback: 'Melanggar SOP GLP dan merusak validitas data stabilitas sediaan.'
+          }
+        ]
+      },
+      {
+        id: 2,
+        title: 'Task 2: Analisis Signifikansi Statistik (p-value, ANOVA) & Penarikan Kesimpulan',
+        duration: '35 Menit',
+        scenario: 'Data uji menunjukkan rata-rata sisa kandungan aktif formulasi baru adalah 94.2% (SD 0.8%) vs kontrol 88.1% (SD 1.1%). Nilai uji Two-Sample T-Test menghasilkan t = 7.82 dengan p-value = 0.0014 (alpha = 0.05).',
+        instructions: [
+          'Tafsirkan signifikansi statistik dari nilai p-value tersebut.',
+          'Tuliskan kesimpulan ilmiah formal dalam 2 kalimat.'
+        ],
+        deliverableType: 'text',
+        placeholderAnswer: 'Interpretasi Statistik:\n1. Karena p-value (0.0014) jauh lebih kecil dari nilai signifikansi alpha (0.05), maka Hipotesis Nol (H0) ditolak secara meyakinkan.\n2. Kesimpulan Ilmiah: Terdapat perbedaan retensi senyawa aktif yang signifikan secara statistik antara formulasi baru X dengan kontrol standar. Formulasi baru terbukti secara meyakinkan mempertahankan stabilitas kimia yang lebih superior di bawah kondisi uji dipercepat.',
+        hint: 'Jelaskan dasar penolakan hipotesis nol berdasarkan nilai p < 0.05.'
+      },
+      {
+        id: 3,
+        title: 'Task 3: Penyusunan Laporan Ringkasan Riset & Rekomendasi Hilirisasi Paten',
+        duration: '20 Menit',
+        scenario: 'Tuliskan ringkasan eksekutif 1 halaman untuk komite paten dan pimpinan divisi manufaktur.',
+        instructions: [
+          'Sertakan ringkasan temuan kunci, keunggulan kompetitif, dan rekomendasi langkah uji lanjutan.'
+        ],
+        deliverableType: 'text',
+        placeholderAnswer: 'Laporan Kajian Hilirisasi:\n- Temuan Kunci: Formulasi baru meningkatkan shelf-life produk dari perkiraan 12 bulan menjadi 24 bulan pada suhu ruang tropis.\n- Rekomendasi HKI: Daftarkan klaim paten formulasi komposisi bahan ke DJKI paling lambat kuartal ini sebelum publikasi jurnal ilmiah.\n- Langkah Lanjutan: Lanjutkan ke tahap pilot batch scale-up pada skala pabrik 100 liter dan uji bioavailabilitas in vivo.',
+        hint: 'Pastikan perlindungan hak paten ditekankan sebelum hasil dipublikasikan ke publik.'
+      }
+    ]
   }
+};
+
+// Aliases dictionary mapping user slugs / variations to canonical simulations
+export const SIMULATION_ALIASES: Record<string, string> = {
+  // UX / Design
+  'ux-designer': 'ui-ux-designer',
+  'ui-ux-designer': 'ui-ux-designer',
+  'ui-ux': 'ui-ux-designer',
+  'product-designer': 'ui-ux-designer',
+
+  // Content & Marketing
+  'content-strategist': 'content-creator-social-media-specialist',
+  'content-creator-social-media-specialist': 'content-creator-social-media-specialist',
+  'digital-marketing-specialist': 'community-manager',
+  'digital-marketing': 'community-manager',
+  'social-media-specialist': 'content-creator-social-media-specialist',
+
+  // Engineering & Tech
+  'software-engineer': 'software-engineer-front-back-full-stack',
+  'software-engineer-front-back-full-stack': 'software-engineer-front-back-full-stack',
+  'devops-engineer-qa-automation-engineer': 'software-engineer-front-back-full-stack',
+  'devops-engineer': 'software-engineer-front-back-full-stack',
+  'frontend-engineer': 'software-engineer-front-back-full-stack',
+  'backend-engineer': 'software-engineer-front-back-full-stack',
+
+  // Data & AI
+  'data-analyst': 'data-analyst-business-intelligence',
+  'data-analyst-business-intelligence': 'data-analyst-business-intelligence',
+  'ai-ml-engineer': 'ai-ml-engineer',
+  'machine-learning-engineer': 'ai-ml-engineer',
+  'data-scientist': 'data-scientist',
+  'data-researcher-strategy-analyst': 'research-scientist',
+  'research-scientist': 'research-scientist',
+
+  // Business, Product & HR
+  'startup-founder': 'startup-founder',
+  'product-manager': 'product-manager',
+  'community-manager': 'community-manager',
+  'hr-business-partner': 'hr-business-partner',
+  'business-development-account-executive': 'startup-founder',
+  'business-development': 'startup-founder',
 };
 
 // Helper to get or fallback simulation for any career profile
 export function getSimulationForCareer(careerTitle: string, careerSlug?: string): IndustrySimulation {
-  const slug = careerSlug || careerTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+  // 1. Prioritize careerTitle matching (since careerTitle is what the user actually chose)
+  if (careerTitle) {
+    const titleSlug = careerTitle
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
 
-  if (INDUSTRY_SIMULATIONS[slug]) {
-    return INDUSTRY_SIMULATIONS[slug];
+    if (INDUSTRY_SIMULATIONS[titleSlug]) {
+      return INDUSTRY_SIMULATIONS[titleSlug];
+    }
+    const titleAlias = SIMULATION_ALIASES[titleSlug];
+    if (titleAlias && INDUSTRY_SIMULATIONS[titleAlias]) {
+      return INDUSTRY_SIMULATIONS[titleAlias];
+    }
+
+    const lower = careerTitle.toLowerCase();
+    if (lower.includes('software engineer') || lower.includes('full-stack') || lower.includes('developer') || lower.includes('programmer')) {
+      return INDUSTRY_SIMULATIONS['software-engineer-front-back-full-stack'];
+    }
+    if (lower.includes('devops') || lower.includes('qa automation')) {
+      return INDUSTRY_SIMULATIONS['software-engineer-front-back-full-stack'];
+    }
+    if (lower.includes('data analyst') || lower.includes('business intelligence')) {
+      return INDUSTRY_SIMULATIONS['data-analyst-business-intelligence'];
+    }
+    if (lower.includes('ui/ux') || lower.includes('ux designer') || lower.includes('product designer')) {
+      return INDUSTRY_SIMULATIONS['ui-ux-designer'];
+    }
+    if (lower.includes('content creator') || lower.includes('content strategist') || lower.includes('social media')) {
+      return INDUSTRY_SIMULATIONS['content-creator-social-media-specialist'];
+    }
+    if (lower.includes('digital marketing') || lower.includes('community')) {
+      return INDUSTRY_SIMULATIONS['community-manager'];
+    }
+    if (lower.includes('ai') || lower.includes('machine learning') || lower.includes('ml engineer')) {
+      return INDUSTRY_SIMULATIONS['ai-ml-engineer'];
+    }
+    if (lower.includes('data scientist')) {
+      return INDUSTRY_SIMULATIONS['data-scientist'];
+    }
+    if (lower.includes('researcher') || lower.includes('scientist') || lower.includes('strategy analyst')) {
+      return INDUSTRY_SIMULATIONS['research-scientist'];
+    }
+    if (lower.includes('business development') || lower.includes('account executive')) {
+      return INDUSTRY_SIMULATIONS['hr-business-partner'];
+    }
+    if (lower.includes('startup') || lower.includes('founder')) {
+      return INDUSTRY_SIMULATIONS['startup-founder'];
+    }
+    if (lower.includes('product manager')) {
+      return INDUSTRY_SIMULATIONS['product-manager'];
+    }
+    if (lower.includes('hr') || lower.includes('human resources')) {
+      return INDUSTRY_SIMULATIONS['hr-business-partner'];
+    }
   }
 
-  // Fallback template simulation
+  // 2. Direct slug match if provided
+  if (careerSlug) {
+    const rawSlug = careerSlug
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)+/g, '');
+
+    if (INDUSTRY_SIMULATIONS[rawSlug]) {
+      return INDUSTRY_SIMULATIONS[rawSlug];
+    }
+    const aliasMatch = SIMULATION_ALIASES[rawSlug];
+    if (aliasMatch && INDUSTRY_SIMULATIONS[aliasMatch]) {
+      return INDUSTRY_SIMULATIONS[aliasMatch];
+    }
+  }
+
+  // 3. Normalized slug from either
+  const rawSlug = (careerSlug || careerTitle)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)+/g, '');
+
+  // 4. Fuzzy title keyword search
+  const lowerTitle = (careerTitle || '').toLowerCase();
+  for (const [key, sim] of Object.entries(INDUSTRY_SIMULATIONS)) {
+    if (
+      lowerTitle.includes(sim.careerTitle.toLowerCase()) ||
+      sim.careerTitle.toLowerCase().includes(lowerTitle) ||
+      lowerTitle.includes(key.replace(/-/g, ' '))
+    ) {
+      return sim;
+    }
+  }
+
+  // 5. Fallback template simulation
   return {
     careerTitle: careerTitle,
-    careerSlug: slug,
+    careerSlug: rawSlug,
     companyName: 'Telkom Digital Ecosystem',
     companyLogoText: '🔴 Telkom Indonesia',
     companyColor: '#E60012',

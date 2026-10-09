@@ -42,23 +42,16 @@ export default async function CertificatePage({
     );
   }
 
-  const profile = CAREER_PROFILES.find((c) => c.title === result.selectedCareer);
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-space flex flex-col">
-        <Navbar />
-        <main className="flex-1 flex items-center justify-center p-4">
-          <div className="glass-card p-8 text-center max-w-md">
-            <h2 className="text-xl font-bold text-slate-800 mb-2">Profil Karier Tidak Ditemukan</h2>
-            <Link href="/roadmap" className="btn-primary inline-flex">Kembali ke Roadmap</Link>
-          </div>
-        </main>
-      </div>
-    );
-  }
+  const profile = CAREER_PROFILES.find((c) => 
+    c.title === result.selectedCareer || 
+    c.id === result.careerSlug ||
+    (result.selectedCareer && c.title.toLowerCase().includes(result.selectedCareer.toLowerCase())) ||
+    (result.careerSlug && c.id.toLowerCase().includes(result.careerSlug.toLowerCase()))
+  );
 
-  const slug = result.careerSlug || profile.id;
-  const simulationData = getSimulationForCareer(profile.title, slug);
+  const careerTitle = result.selectedCareer || profile?.title || 'Profesional Karier';
+  const slug = result.careerSlug || profile?.id || 'general-career';
+  const simulationData = getSimulationForCareer(careerTitle, slug);
 
   const credentialId = `GAP-${assessmentId.slice(0, 8).toUpperCase()}`;
   const issueDate = new Date().toLocaleDateString('id-ID', {
@@ -77,7 +70,7 @@ export default async function CertificatePage({
           assessmentId={assessmentId}
           userName={session.user.name || 'Peserta Gapless'}
           userEmail={session.user.email || ''}
-          careerTitle={profile.title}
+          careerTitle={careerTitle}
           companyName={simulationData.companyName}
           badgeLabel={simulationData.badgeLabel}
           skillsValidated={simulationData.skillsValidated}

@@ -49,23 +49,16 @@ export default async function SimulationPage({
     );
   }
 
-  const profile = CAREER_PROFILES.find((c) => c.title === result.selectedCareer);
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-space flex flex-col">
-        <Navbar />
-        <main className="flex-1 flex items-center justify-center p-4">
-          <div className="glass-card p-8 text-center max-w-md">
-            <h2 className="text-xl font-bold text-slate-800 mb-2">Profil Karier Tidak Ditemukan</h2>
-            <Link href="/roadmap" className="btn-primary inline-flex">Kembali ke Roadmap</Link>
-          </div>
-        </main>
-      </div>
-    );
-  }
+  const profile = CAREER_PROFILES.find((c) => 
+    c.title === result.selectedCareer || 
+    c.id === result.careerSlug ||
+    (result.selectedCareer && c.title.toLowerCase().includes(result.selectedCareer.toLowerCase())) ||
+    (result.careerSlug && c.id.toLowerCase().includes(result.careerSlug.toLowerCase()))
+  );
 
-  const slug = result.careerSlug || profile.id;
-  const simulationData = getSimulationForCareer(profile.title, slug);
+  const careerTitle = result.selectedCareer || profile?.title || 'Profesional Karier';
+  const slug = result.careerSlug || profile?.id || 'general-career';
+  const simulationData = getSimulationForCareer(careerTitle, slug);
 
   // Cek apakah sudah pernah menyelesaikan simulasi
   const progressRecord = await db.query.roadmapProgress.findFirst({
@@ -84,7 +77,7 @@ export default async function SimulationPage({
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-10">
         <SimulationClient
           assessmentId={assessmentId}
-          careerTitle={profile.title}
+          careerTitle={careerTitle}
           careerSlug={slug}
           simulation={simulationData}
           isInitiallyCompleted={isSimulationCompleted}
