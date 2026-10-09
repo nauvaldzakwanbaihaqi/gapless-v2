@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { userPurchases, products } from '@/db/schema';
+import { userPurchases, products, users } from '@/db/schema';
 import { eq, and, sql, gt, desc } from 'drizzle-orm';
 
 export interface ProductItem {
@@ -185,6 +185,12 @@ export async function subscribeProMock(userId: string, userEmail?: string | null
 
     result = inserted[0];
   }
+
+  // Sinkronkan users.tier ke 'Student Pro'
+  await db
+    .update(users)
+    .set({ tier: 'Student Pro' })
+    .where(eq(users.id, userId));
 
   return {
     success: true,

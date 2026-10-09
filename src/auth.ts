@@ -6,6 +6,8 @@ import { db } from "./db"
 import { users } from "./db/schema"
 import { eq } from "drizzle-orm"
 
+import { hasActivePro } from "./lib/payment_service"
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
     adapter: DrizzleAdapter(db),
     providers: [
@@ -24,22 +26,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 if (userId) {
                     session.user.id = userId;
                     try {
-                        const dbUser = await db
-                            .select({ tier: users.tier })
-                            .from(users)
-                            .where(eq(users.id, userId))
-                            .limit(1);
-                        if (dbUser.length > 0 && dbUser[0].tier) {
-                            session.user.tier = dbUser[0].tier;
-                        }
+                        const isPro = await hasActivePro(userId);
+                        session.user.isPro = isPro;
+                        session.user.tier = isPro ? 'Student Pro' : 'FREE';
                     } catch (e) {
-                        console.error("Error fetching user tier in session:", e);
+                        console.error("Error fetching user pro status in session:", e);
+                        session.user.isPro = false;
+                        session.user.tier = 'FREE';
                     }
-                }
-                
-                // Hardcode Unlimited / Pro for testing email
-                if (session.user.email === 'nauvaldzakwan17@upi.edu') {
-                    session.user.tier = 'Student Pro';
                 }
             }
             return session;

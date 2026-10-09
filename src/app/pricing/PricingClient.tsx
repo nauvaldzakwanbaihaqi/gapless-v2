@@ -8,7 +8,8 @@ import {
 } from 'lucide-react';
 import { PLAN_CONFIG, PRODUCTS } from '@/config/plan';
 import Link from 'next/link';
-import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { signIn, useSession } from 'next-auth/react';
 
 interface Props {
   isLoggedIn: boolean;
@@ -18,6 +19,8 @@ interface Props {
 }
 
 export function PricingClient({ isLoggedIn, isPro: initialIsPro, periodEnd: initialPeriodEnd, daysRemaining: initialDaysRemaining }: Props) {
+  const router = useRouter();
+  const { update } = useSession();
   const [isPro, setIsPro] = useState(initialIsPro);
   const [periodEnd, setPeriodEnd] = useState<string | null>(initialPeriodEnd);
   const [daysRemaining, setDaysRemaining] = useState(initialDaysRemaining);
@@ -47,6 +50,12 @@ export function PricingClient({ isLoggedIn, isPro: initialIsPro, periodEnd: init
           setDaysRemaining(30);
         }
         setSuccessMsg('Langganan Gapless Pro berhasil diaktifkan!');
+        try {
+          if (update) {
+            await update();
+          }
+        } catch (_) {}
+        router.refresh();
         setTimeout(() => {
           setShowProModal(false);
           setSuccessMsg(null);

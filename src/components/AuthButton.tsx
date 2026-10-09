@@ -1,10 +1,11 @@
 "use client";
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 import { signIn, signOut } from "next-auth/react";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
-import { LogOut, User } from "lucide-react";
+import { LogOut, Crown } from "lucide-react";
 
 interface AuthButtonProps {
     variant?: 'light' | 'dark';
@@ -13,6 +14,31 @@ interface AuthButtonProps {
 export default function AuthButton({ variant = 'light' }: AuthButtonProps) {
     const { session, status } = useAuthGuard();
     const isDark = variant === 'dark';
+
+    const sessionIsPro = Boolean(
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (session?.user as any)?.isPro ||
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ((session?.user as any)?.tier && (session?.user as any).tier !== 'FREE' && (session?.user as any).tier.toLowerCase().includes('pro'))
+    );
+    const [isPro, setIsPro] = useState(sessionIsPro);
+
+    useEffect(() => {
+        setIsPro(sessionIsPro);
+    }, [sessionIsPro]);
+
+    useEffect(() => {
+        if (!session?.user?.id) return;
+        // Sinkronisasi status langganan riil
+        fetch('/api/user/subscription')
+            .then((res) => res.json())
+            .then((data) => {
+                if (typeof data?.isPro === 'boolean') {
+                    setIsPro(data.isPro);
+                }
+            })
+            .catch(() => {});
+    }, [session?.user?.id]);
 
     if (status === "loading") {
         return (
@@ -41,11 +67,35 @@ export default function AuthButton({ variant = 'light' }: AuthButtonProps) {
                         {session.user.name}
                     </p>
                     <div className="flex items-center gap-1.5 mt-0.5">
-                        <Link href="/pricing" className={`text-[10px] font-bold transition ${
-                            isDark ? 'text-blue-400 hover:underline' : 'text-blue-600 hover:underline'
-                        }`}>
-                            Gapless Pro
-                        </Link>
+                        {isPro ? (
+                            <Link 
+                                href="/pricing" 
+                                className={`inline-flex items-center gap-1 text-[10px] font-bold transition ${
+                                    isDark ? 'text-amber-400 hover:text-amber-300' : 'text-blue-600 hover:text-blue-700'
+                                }`}
+                                title="Paket Aktif: Gapless Pro"
+                            >
+                                <Crown className="w-2.5 h-2.5 text-amber-500 fill-amber-500" />
+                                <span>Gapless Pro</span>
+                            </Link>
+                        ) : (
+                            <div className="flex items-center gap-1.5">
+                                <span className={`text-[10px] font-medium ${
+                                    isDark ? 'text-slate-400' : 'text-slate-500'
+                                }`}>
+                                    Free
+                                </span>
+                                <span className={`text-[9px] ${isDark ? 'text-slate-600' : 'text-slate-300'}`}>•</span>
+                                <Link 
+                                    href="/pricing" 
+                                    className={`text-[10px] font-bold transition ${
+                                        isDark ? 'text-blue-400 hover:underline' : 'text-blue-600 hover:underline'
+                                    }`}
+                                >
+                                    Upgrade ke Pro
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 </div>
 
