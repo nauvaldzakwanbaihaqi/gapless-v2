@@ -88,26 +88,6 @@ export function PricingClient({ isLoggedIn, isPro: initialIsPro, periodEnd: init
 
   return (
     <div className="space-y-16">
-      {/* Header Section */}
-      <div className="text-center max-w-3xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-4"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          Investasi Terjangkau untuk Masa Depan Kariermu
-        </motion.div>
-        <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-          Pilihan Paket Belajar & <br />
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500">
-            Akselerasi Karier Impian
-          </span>
-        </h1>
-        <p className="mt-4 text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
-          Mulai eksplorasi minat kariermu secara gratis, atau tingkatkan ke Gapless Pro untuk kurikulum lengkap dan bimbingan berkala.
-        </p>
-      </div>
 
       {/* 2 Main Pricing Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
@@ -189,13 +169,13 @@ export function PricingClient({ isLoggedIn, isPro: initialIsPro, periodEnd: init
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950 text-white rounded-3xl p-8 shadow-2xl border-2 border-indigo-500/40 flex flex-col justify-between relative overflow-hidden ring-4 ring-blue-500/10"
+          className="bg-linear-to-br from-slate-900 via-slate-900 to-indigo-950 text-white rounded-3xl p-8 shadow-2xl border-2 border-indigo-500/40 flex flex-col justify-between relative overflow-hidden ring-4 ring-blue-500/10"
         >
-          <div className="absolute top-0 right-0 transform translate-x-8 -translate-y-8 w-48 h-48 bg-gradient-to-br from-blue-500/30 to-indigo-500/30 rounded-full blur-2xl pointer-events-none" />
+          <div className="absolute top-0 right-0 transform translate-x-8 -translate-y-8 w-48 h-48 bg-linear-to-br from-blue-500/30 to-indigo-500/30 rounded-full blur-2xl pointer-events-none" />
 
           <div>
             <div className="flex items-center justify-between mb-4">
-              <span className="px-3.5 py-1 rounded-full bg-gradient-to-r from-blue-500 via-indigo-500 to-sky-400 text-white text-xs font-extrabold tracking-wider uppercase shadow-sm flex items-center gap-1.5">
+              <span className="px-3.5 py-1 rounded-full bg-linear-to-r from-blue-500 via-indigo-500 to-sky-400 text-white text-xs font-extrabold tracking-wider uppercase shadow-sm flex items-center gap-1.5">
                 <Crown className="w-3.5 h-3.5" />
                 {PLAN_CONFIG.pro.displayName}
               </span>
@@ -249,7 +229,7 @@ export function PricingClient({ isLoggedIn, isPro: initialIsPro, periodEnd: init
           <div className="pt-8 mt-6">
             <button
               onClick={() => setShowProModal(true)}
-              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-blue-500 via-indigo-500 to-sky-500 hover:opacity-95 text-white text-xs font-bold flex items-center justify-center gap-2 transition shadow-lg cursor-pointer"
+              className="w-full py-3.5 px-4 rounded-xl bg-linear-to-r from-blue-500 via-indigo-500 to-sky-500 hover:opacity-95 text-white text-xs font-bold flex items-center justify-center gap-2 transition shadow-lg cursor-pointer"
             >
               <Crown className="w-4 h-4" />
               {isPro ? 'Perpanjang Pro (+30 Hari)' : 'Mulai Gapless Pro (Rp 29.000)'}
@@ -259,7 +239,7 @@ export function PricingClient({ isLoggedIn, isPro: initialIsPro, periodEnd: init
       </div>
 
       {/* Section Terpisah: Laporan Gap Mendalam (Rp9.900) */}
-      <div className="max-w-4xl mx-auto bg-gradient-to-r from-blue-50 via-indigo-50/60 to-slate-50 rounded-3xl p-8 border border-blue-200/80 shadow-sm relative overflow-hidden">
+      <div className="max-w-4xl mx-auto bg-linear-to-r from-blue-50 via-indigo-50/60 to-slate-50 rounded-3xl p-8 border border-blue-200/80 shadow-sm relative overflow-hidden">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="space-y-2 max-w-xl">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100/80 text-blue-800 text-xs font-bold border border-blue-200">
@@ -335,7 +315,7 @@ export function PricingClient({ isLoggedIn, isPro: initialIsPro, periodEnd: init
               </button>
 
               <div className="text-center mb-6">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 text-white flex items-center justify-center mx-auto mb-3 shadow-md">
+                <div className="w-14 h-14 rounded-2xl bg-linear-to-tr from-blue-600 via-indigo-600 to-sky-500 text-white flex items-center justify-center mx-auto mb-3 shadow-md">
                   <Crown className="w-7 h-7" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-900">
@@ -377,7 +357,7 @@ export function PricingClient({ isLoggedIn, isPro: initialIsPro, periodEnd: init
                   <button
                     onClick={handleSubscribePro}
                     disabled={isSubscribing}
-                    className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500 hover:opacity-95 text-white text-xs font-semibold shadow-md transition disabled:opacity-50 cursor-pointer"
+                    className="flex-1 py-2.5 rounded-xl bg-linear-to-r from-blue-600 via-indigo-600 to-sky-500 hover:opacity-95 text-white text-xs font-semibold shadow-md transition disabled:opacity-50 cursor-pointer"
                   >
                     {isSubscribing ? 'Memproses...' : 'Konfirmasi Bayar'}
                   </button>
