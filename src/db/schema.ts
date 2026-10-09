@@ -294,6 +294,7 @@ export const softSkillMissions = pgTable("soft_skill_missions", {
   description: text("description"),
   estimatedMinutes: integer("estimated_minutes").default(30),
   difficultyLevel: text("difficulty_level").default("medium"),
+  difficultyOrder: integer("difficulty_order").default(1),
   isSample: boolean("is_sample").default(true).notNull(),
   isActive: boolean("is_active").default(true).notNull(),
   sortOrder: integer("sort_order").default(0),

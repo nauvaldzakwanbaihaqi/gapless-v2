@@ -66,7 +66,9 @@ interface Mission {
   description: string | null;
   estimatedMinutes: number | null;
   difficultyLevel: string | null;
+  difficultyOrder?: number | null;
   isSample: boolean;
+  isLocked?: boolean;
 }
 
 interface MissionProgress {
@@ -102,6 +104,7 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
   const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [submissionText, setSubmissionText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lockedMissionModal, setLockedMissionModal] = useState<Mission | null>(null);
 
   const groups = groupByCompetency(missions);
   const allCompetencies = Object.keys(COMPETENCY_CONFIG);
@@ -219,6 +222,7 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
               {misiList.map((mission) => {
                 const progress = progressMap[mission.id] || submittedId === mission.id ? { status: 'completed' } : null;
                 const isCompleted = progress?.status === 'completed' || submittedId === mission.id;
+                const isLocked = Boolean(mission.isLocked);
                 const isExpanded = expandedId === mission.id;
                 const diffCfg = DIFFICULTY_CONFIG[mission.difficultyLevel || 'medium'];
 
@@ -226,31 +230,62 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
                   <motion.div
                     key={mission.id}
                     layout
-                    className={`bg-white border rounded-2xl overflow-hidden transition-shadow ${
-                      isCompleted ? 'border-emerald-200' : 'border-slate-200 hover:border-blue-200'
-                    } ${isExpanded ? 'shadow-md' : 'shadow-sm'}`}
+                    className={`border rounded-2xl overflow-hidden transition-shadow ${
+                      isCompleted
+                        ? 'bg-white border-emerald-200'
+                        : isLocked
+                        ? 'bg-slate-50/70 border-slate-200/80 hover:border-indigo-300'
+                        : 'bg-white border-slate-200 hover:border-blue-200'
+                    } ${isExpanded ? 'shadow-md' : 'shadow-xs'}`}
                   >
                     <button
-                      onClick={() => setExpandedId(isExpanded ? null : mission.id)}
+                      onClick={() => {
+                        if (isLocked) {
+                          setLockedMissionModal(mission);
+                        } else {
+                          setExpandedId(isExpanded ? null : mission.id);
+                        }
+                      }}
                       className="w-full text-left p-4 flex items-start gap-3 cursor-pointer"
                       id={`mission-${mission.id}`}
                     >
                       <div className={`flex-shrink-0 mt-0.5 w-6 h-6 rounded-full flex items-center justify-center ${
-                        isCompleted ? 'bg-emerald-100' : 'bg-slate-100'
+                        isCompleted
+                          ? 'bg-emerald-100'
+                          : isLocked
+                          ? 'bg-slate-200/70 text-slate-500'
+                          : 'bg-slate-100 text-slate-500'
                       }`}>
-                        {isCompleted
-                          ? <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                          : <Zap className="w-3.5 h-3.5 text-slate-500" />
-                        }
+                        {isCompleted ? (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        ) : isLocked ? (
+                          <Lock className="w-3.5 h-3.5 text-slate-500" />
+                        ) : (
+                          <Zap className="w-3.5 h-3.5 text-slate-500" />
+                        )}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap items-start justify-between gap-2">
-                          <p className={`font-semibold text-sm ${isCompleted ? 'text-emerald-800' : 'text-slate-900'}`}>
-                            {mission.title}
-                            {isCompleted && (
-                              <span className="ml-2 text-xs font-normal text-emerald-600">✓ Selesai (Diisi sendiri)</span>
+                          <div>
+                            <p className={`font-semibold text-sm ${
+                              isCompleted
+                                ? 'text-emerald-800'
+                                : isLocked
+                                ? 'text-slate-700'
+                                : 'text-slate-900'
+                            }`}>
+                              {mission.title}
+                              {isCompleted && (
+                                <span className="ml-2 text-xs font-normal text-emerald-600">✓ Selesai (Diisi sendiri)</span>
+                              )}
+                            </p>
+                            {isLocked && (
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200/60 px-2 py-0.5 rounded-md mt-1">
+                                <Lock className="w-2.5 h-2.5" />
+                                Tersedia di Gapless Pro
+                              </span>
                             )}
-                          </p>
+                          </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
                             <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full border ${diffCfg.color}`}>
                               {diffCfg.label}
@@ -259,14 +294,18 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
                               <Clock className="w-3 h-3" />
                               {mission.estimatedMinutes} mnt
                             </span>
-                            <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                            {isLocked ? (
+                              <Lock className="w-4 h-4 text-slate-400" />
+                            ) : (
+                              <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                            )}
                           </div>
                         </div>
                       </div>
                     </button>
 
                     <AnimatePresence>
-                      {isExpanded && !isCompleted && (
+                      {isExpanded && !isCompleted && !isLocked && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
@@ -320,8 +359,57 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
         );
       })}
 
-      {/* Locked teaser untuk Free */}
-      
+      {/* Modal Upgrade untuk Misi Terkunci */}
+      <AnimatePresence>
+        {lockedMissionModal && (
+          <motion.div
+            className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setLockedMissionModal(null)}
+          >
+            <motion.div
+              className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl border border-slate-100 text-center relative overflow-hidden"
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-14 h-14 rounded-2xl bg-linear-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center mx-auto mb-4 shadow-md">
+                <Lock className="w-7 h-7" />
+              </div>
+
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1 rounded-full mb-3 inline-block">
+                Fitur Eksklusif Pro
+              </span>
+
+              <h3 className="text-xl font-bold text-slate-900 mb-2">
+                Upgrade ke Gapless Pro untuk Mengakses Semua Misi
+              </h3>
+
+              <p className="text-sm text-slate-600 mb-6 leading-relaxed">
+                Misi <strong className="text-slate-800">"{lockedMissionModal.title}"</strong> dan misi tingkat lanjut lainnya dirancang untuk melatih kompetensi dunia kerja riil. Dapatkan akses ke seluruh paket misi bulanan & feedback AI dengan Gapless Pro.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => setLockedMissionModal(null)}
+                  className="flex-1 py-3 px-4 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold hover:bg-slate-50 transition cursor-pointer"
+                >
+                  Nanti Saja
+                </button>
+                <Link
+                  href="/pricing"
+                  className="flex-1 py-3 px-4 rounded-xl bg-linear-to-r from-blue-600 via-indigo-600 to-sky-500 hover:opacity-95 text-white text-xs font-bold shadow-md transition flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <span>Mulai Pro (Rp29k)</span>
+                </Link>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

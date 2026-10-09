@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { db } from '@/db';
 import { softSkillMissions, userMissionProgress } from '@/db/schema';
-import { eq, asc } from 'drizzle-orm';
-import { getEntitlements } from '@/lib/entitlements';
+import { eq, and, asc } from 'drizzle-orm';
+import { hasActivePro } from '@/lib/payment_service';
 import { z } from 'zod';
 
 const submitSchema = z.object({
@@ -29,33 +29,40 @@ export async function POST(
       return NextResponse.json({ error: 'Data tidak valid', details: parsed.error.issues }, { status: 400 });
     }
 
-    const tier = (session.user as any).tier;
-    const ent = getEntitlements(tier);
-
-    // Ambil misi untuk cek kuota Free
+    // Ambil misi untuk cek keberadaan
     const mission = await db
       .select()
       .from(softSkillMissions)
-      .where(eq(softSkillMissions.id, missionId))
+      .where(and(eq(softSkillMissions.id, missionId), eq(softSkillMissions.isActive, true)))
       .limit(1);
 
-    if (!mission.length || !mission[0].isActive) {
+    if (!mission.length) {
       return NextResponse.json({ error: 'Misi tidak ditemukan' }, { status: 404 });
     }
 
-    // Jika Free, pastikan misi ini masuk kuota N terdepan
-    if (Number.isFinite(ent.missions.limit)) {
-      const allActive = await db
-        .select({ id: softSkillMissions.id })
-        .from(softSkillMissions)
-        .where(eq(softSkillMissions.isActive, true))
-        .orderBy(asc(softSkillMissions.sortOrder))
-        .limit(ent.missions.limit);
+    const currentMission = mission[0];
 
-      const allowedIds = new Set(allActive.map((m) => m.id));
-      if (!allowedIds.has(missionId)) {
+    // Ambil seluruh misi pada kompetensi yang sama, urutkan difficulty_order ASC
+    const compMissions = await db
+      .select({ id: softSkillMissions.id })
+      .from(softSkillMissions)
+      .where(and(
+        eq(softSkillMissions.isActive, true),
+        eq(softSkillMissions.competency, currentMission.competency)
+      ))
+      .orderBy(
+        asc(softSkillMissions.difficultyOrder),
+        asc(softSkillMissions.sortOrder)
+      );
+
+    const missionIndex = compMissions.findIndex((m) => m.id === missionId);
+
+    // Misi index >= 1 (misi ke-2 dan seterusnya) hanya untuk user Pro
+    if (missionIndex > 0) {
+      const isPro = await hasActivePro(session.user.id);
+      if (!isPro) {
         return NextResponse.json(
-          { error: 'Misi ini hanya tersedia untuk anggota Plus' },
+          { error: 'Misi ini hanya tersedia untuk pengguna Gapless Pro' },
           { status: 403 }
         );
       }
