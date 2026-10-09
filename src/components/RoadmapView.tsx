@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CheckCircle2, ChevronDown, RotateCcw, Lock, Home } from 'lucide-react';
+import { CheckCircle2, ChevronDown, RotateCcw, Lock, Home, Sparkles } from 'lucide-react';
 import { useGaplessContext } from '@/contexts/CareerContext';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
 
@@ -124,21 +124,6 @@ export function RoadmapView({ overrideData, isPro: propIsPro }: RoadmapViewProps
           <p className="text-slate-500 text-base md:text-lg max-w-2xl mx-auto">
             Jalur belajar personal 4 fase dengan metrik kesiapan kompetensi industri.
           </p>
-        </motion.div>
-
-        {/* Skill Readiness & Progress Overview */}
-        <motion.div
-          initial={{ opacity: 0, y: 15 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-        >
-          <SkillReadinessCard
-            career={selectedCareer}
-            skillRatings={skillRatings}
-            completedModulesCount={completedModules}
-            totalModulesCount={totalModules}
-            assessmentId={overrideData?.id || context.currentAssessmentId || undefined}
-          />
         </motion.div>
 
         {/* Timeline */}
@@ -358,6 +343,32 @@ export function RoadmapView({ overrideData, isPro: propIsPro }: RoadmapViewProps
                       );
                     })}
                   </div>
+
+                  {/* Bagian Expert: Analisis Kesiapan Karier & Simulasi Proyek Industri (Hanya di Fase 4 & Khusus Pro) */}
+                  {phaseIdx === 3 && isPro && (
+                    <div className="mt-8 pt-8 border-t border-slate-100">
+                      <div className="mb-4">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-2">
+                          <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+                          Tahap Expert • Evaluasi Kesiapan & Simulasi
+                        </span>
+                        <h4 className="text-xl font-bold text-slate-900">
+                          Analisis Kesiapan & Sertifikasi Portofolio Industri
+                        </h4>
+                        <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                          Ukur kesiapan kompetensi riil kamu terhadap standar industri O*NET dan selesaikan simulasi studi kasus kerja untuk portofolio.
+                        </p>
+                      </div>
+
+                      <SkillReadinessCard
+                        career={selectedCareer}
+                        skillRatings={skillRatings}
+                        completedModulesCount={completedModules}
+                        totalModulesCount={totalModules}
+                        assessmentId={overrideData?.id || context.currentAssessmentId || undefined}
+                      />
+                    </div>
+                  )}
                 </div>
               </motion.div>
             );

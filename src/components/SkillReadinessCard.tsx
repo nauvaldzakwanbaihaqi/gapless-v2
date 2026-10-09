@@ -58,7 +58,7 @@ export function SkillReadinessCard({
   const showBgYudaGapNotice = isCompletionFull && isReadinessNotFull;
 
   return (
-    <div className="w-full mb-10">
+    <div className="w-full mt-3">
       {/* Main Container Card */}
       <div className="bg-white/90 backdrop-blur-md rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
         {/* Top Highlight Banner */}
