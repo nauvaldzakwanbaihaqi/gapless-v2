@@ -1,31 +1,16 @@
 import { NextResponse } from 'next/server';
-import { generateObject } from 'ai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { z } from 'zod';
 import { auth } from '@/auth';
-import { checkRateLimit } from '@/lib/rateLimit';
 import { db } from '@/db';
 import { aiModuleInsights, learningResources } from '@/db/schema';
-import { eq, and, desc, asc } from 'drizzle-orm';
-
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
+import { eq, desc, asc } from 'drizzle-orm';
+import { MODULE_DETAILS } from '@/data/gaplessData';
 
 const RequestSchema = z.object({
   moduleName: z.string().min(1, "Module name tidak boleh kosong"),
   roleName: z.string().min(1, "Role name tidak boleh kosong"),
   moduleSlug: z.string().min(1, "Module slug tidak boleh kosong"),
   careerSlug: z.string().min(1, "Career slug tidak boleh kosong")
-});
-
-const ModuleInsightAiSchema = z.object({
-  target: z.string().describe("Target kompetensi yang dicapai setelah menyelesaikan modul"),
-  duration: z.string().describe("Estimasi durasi belajar, misal: 'Estimasi 2-4 Jam'"),
-  breakdown: z.array(z.object({
-    title: z.string().describe("Judul sub-topik"),
-    description: z.string().describe("Ringkasan esensi materi")
-  })).min(2),
 });
 
 /**
@@ -99,25 +84,15 @@ async function fetchMatchedResources(moduleName: string, roleName: string) {
 
 export async function POST(req: Request) {
   try {
-    // A. Auth Guard
+    // 1. Auth Guard
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Origin Check
-    const origin = req.headers.get('origin');
-    const referer = req.headers.get('referer');
-    const host = req.headers.get('host');
-    const isAllowedOrigin = (origin && origin.includes(host as string)) || (referer && referer.includes(host as string));
-    
-    if (!isAllowedOrigin && (origin || referer)) {
-       return NextResponse.json({ error: 'Forbidden Origin' }, { status: 403 });
-    }
-
     const rawBody = await req.json();
     
-    // Validasi Zod
+    // 2. Validasi Zod
     const validationResult = RequestSchema.safeParse(rawBody);
     if (!validationResult.success) {
       return NextResponse.json({ error: 'Bad Request', details: validationResult.error.format() }, { status: 400 });
@@ -125,90 +100,51 @@ export async function POST(req: Request) {
 
     const { moduleName, roleName, moduleSlug, careerSlug } = validationResult.data;
 
-    // E. Cek Cache di Database
-    const cachedInsight = await db.query.aiModuleInsights.findFirst({
-      where: and(
-        eq(aiModuleInsights.moduleSlug, moduleSlug),
-        eq(aiModuleInsights.careerSlug, careerSlug)
-      )
-    });
-
-    // Ambil sumber belajar statis
+    // 3. Ambil sumber belajar terverifikasi dari DB secara deterministik
     const matchedResources = await fetchMatchedResources(moduleName, roleName);
 
-    if (cachedInsight) {
-      console.log(`[CACHE HIT] Mengambil module insight untuk ${moduleSlug} (${careerSlug})`);
-      const insightData = cachedInsight.insightData as any;
-      // Timpa sumber belajar dengan sumber statis terverifikasi terbaru
-      return NextResponse.json({
-        ...insightData,
-        resources: matchedResources,
-      });
-    }
+    // 4. Siapkan breakdown materi paten/statis
+    const manualCuration = MODULE_DETAILS[moduleSlug];
 
-    // Rate Limit Check
-    if (!checkRateLimit(session.user.id, 15, 60000)) {
-      return NextResponse.json({ error: 'Too Many Requests' }, { status: 429 });
-    }
-
-    console.log(`[CACHE MISS] Generating module breakdown untuk ${moduleSlug} (${careerSlug})...`);
-
-    const prompt = `
-      Anda adalah pakar kurikulum dan karier untuk profesi ${roleName}.
-      Saya sedang belajar modul: "${moduleName}".
-      
-      Tolong buatkan detail kurikulum (target kompetensi, durasi, dan 2-3 poin breakdown materi inti).
-      JANGAN sertakan link/sumber belajar eksternal (sumber belajar akan diinjeksi secara statis).
-    `;
-
-    let aiBreakdownData: any;
-    try {
-      if (process.env.GEMINI_API_KEY) {
-        const { object } = await generateObject({
-          model: google('gemini-3.6-flash'),
-          schema: ModuleInsightAiSchema,
-          prompt: prompt,
-          temperature: 0.7,
-          maxRetries: 0,
-          abortSignal: AbortSignal.timeout(8000),
-        });
-        aiBreakdownData = object;
-      } else {
-        throw new Error('GEMINI_API_KEY not configured');
-      }
-    } catch (geminiErr: any) {
-      console.warn(`[MODULE INSIGHT FALLBACK] Menggunakan kurikulum standar untuk ${moduleName}...`);
-      aiBreakdownData = {
-        target: `Menguasai konsep esensial dan penerapan praktis dari ${moduleName} untuk peran ${roleName}.`,
-        duration: 'Estimasi 2-4 Jam',
-        breakdown: [
-          {
-            title: `Konsep Dasar ${moduleName}`,
-            description: `Mempelajari fondasi teoritis dan prinsip inti yang mendasari ${moduleName}.`
-          },
-          {
-            title: `Implementasi Praktis`,
-            description: `Latihan studi kasus langsung dan implementasi teknik ${moduleName} di industri.`
-          }
-        ]
-      };
-    }
-
-    const fullResult = {
-      ...aiBreakdownData,
-      resources: matchedResources,
+    const breakdownData = manualCuration ? {
+      target: manualCuration.target,
+      duration: manualCuration.duration,
+      breakdown: manualCuration.breakdown,
+    } : {
+      target: `Menguasai konsep esensial, teknik terapan, dan standar implementasi materi "${moduleName}" untuk peran ${roleName}.`,
+      duration: 'Estimasi 2–4 Jam',
+      breakdown: [
+        {
+          title: '1. Fondasi Teori & Konsep Inti',
+          description: `Mempelajari prinsip fundamental, arsitektur dasar, dan terminologi penting dari ${moduleName}.`
+        },
+        {
+          title: '2. Implementasi Terapan & Studi Kasus',
+          description: `Latihan langsung menerapkan ${moduleName} melalui skenario nyata yang relevan dengan kebutuhan industri.`
+        },
+        {
+          title: '3. Best Practice & Standar Industri',
+          description: `Mengevaluasi teknik optimasi, penanganan kendala umum, dan standar profesional saat menggunakan ${moduleName}.`
+        }
+      ]
     };
 
-    // Simpan ke Cache
+    const fullResult = {
+      ...breakdownData,
+      resources: manualCuration?.resources && manualCuration.resources.length > 0
+        ? manualCuration.resources
+        : matchedResources,
+    };
+
+    // 5. Simpan/sinkronkan ke cache database
     try {
       await db.insert(aiModuleInsights).values({
         moduleSlug,
         careerSlug,
         insightData: fullResult,
       }).onConflictDoNothing();
-      console.log(`[CACHE SET] Sukses menyimpan module insight untuk ${moduleSlug}`);
     } catch (dbErr) {
-      console.error('[CACHE ERROR] Gagal menyimpan module insight ke database:', dbErr);
+      // Ignored if duplicate key exists
     }
 
     return NextResponse.json(fullResult);

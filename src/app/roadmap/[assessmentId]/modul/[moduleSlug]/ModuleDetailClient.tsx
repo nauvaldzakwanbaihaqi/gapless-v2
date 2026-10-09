@@ -183,9 +183,9 @@ export default function ModuleDetailClient({
     return (
       <div className="flex flex-col gap-8 pb-20 items-center justify-center min-h-[60vh]">
         <div className="flex flex-col items-center gap-4 text-center">
-          <Sparkles className="w-12 h-12 text-blue-500 animate-pulse" />
-          <h2 className="text-2xl font-bold text-slate-800">Sedang Meracik Kurikulum...</h2>
-          <p className="text-slate-500 max-w-md">Sedang meracik silabus dan mencari sumber belajar terbaik untuk modul &quot;{moduleTitle}&quot;.</p>
+          <Book className="w-12 h-12 text-blue-500 animate-pulse" />
+          <h2 className="text-2xl font-bold text-slate-800">Memuat Silabus Modul...</h2>
+          <p className="text-slate-500 max-w-md">Menyiapkan materi terstruktur dan sumber belajar terverifikasi untuk modul &quot;{moduleTitle}&quot;.</p>
         </div>
       </div>
     );

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { CAREER_PROFILES as CAREERS, type CurriculumPhase } from '@/data/gaplessData';
+import { CAREER_PROFILES as CAREERS, findCareerProfile, type CurriculumPhase } from '@/data/gaplessData';
 import { RoadmapView } from '@/components/RoadmapView';
 import type { RoadmapNode } from '@/contexts/CareerContext';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
@@ -62,7 +62,7 @@ export default function RoadmapClient({ history, initialAssessmentId, serverUser
 
       setIsLoadingRoadmap(true);
       try {
-        const profile = CAREERS.find((c: { title: string }) => c.title === selectedHistory.selectedCareer);
+        const profile = findCareerProfile(selectedHistory.selectedCareer) || findCareerProfile(selectedHistory.careerSlug) || CAREERS.find((c: { title: string }) => c.title === selectedHistory.selectedCareer);
         if (!profile) {
           setOverrideData(undefined);
           return;

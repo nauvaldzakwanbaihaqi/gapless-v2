@@ -884,3 +884,51 @@ export function getArchetypeReasoning(scores: Record<Trait, number>): string {
 
   return mapping[primaryTrait];
 }
+
+export function findCareerProfile(identifier?: string | null): CareerProfile | undefined {
+  if (!identifier) return undefined;
+  const clean = identifier.trim().toLowerCase();
+
+  // 1. Direct match by ID
+  const byId = CAREER_PROFILES.find((c) => c.id.toLowerCase() === clean);
+  if (byId) return byId;
+
+  // 2. Direct match by Title
+  const byTitle = CAREER_PROFILES.find((c) => c.title.toLowerCase() === clean);
+  if (byTitle) return byTitle;
+
+  // 3. Keyword / partial matching
+  if (clean.includes('devops') || clean.includes('qa automation') || clean.includes('quality assurance')) {
+    return CAREER_PROFILES.find((c) => c.id === 'product-manager');
+  }
+  if (clean.includes('software engineer') || clean.includes('front-end') || clean.includes('back-end') || clean.includes('full-stack') || clean.includes('developer')) {
+    return CAREER_PROFILES.find((c) => c.id === 'startup-founder');
+  }
+  if (clean.includes('ui/ux') || clean.includes('ux designer') || clean.includes('product designer')) {
+    return CAREER_PROFILES.find((c) => c.id === 'ux-designer');
+  }
+  if (clean.includes('data analyst') || clean.includes('business intelligence') || clean.includes('bi analyst')) {
+    return CAREER_PROFILES.find((c) => c.id === 'data-analyst');
+  }
+  if (clean.includes('ai/ml') || clean.includes('machine learning') || clean.includes('ai engineer')) {
+    return CAREER_PROFILES.find((c) => c.id === 'ai-ml-engineer');
+  }
+  if (clean.includes('content creator') || clean.includes('social media')) {
+    return CAREER_PROFILES.find((c) => c.id === 'content-strategist');
+  }
+  if (clean.includes('digital marketing') || clean.includes('community manager') || clean.includes('seo') || clean.includes('growth')) {
+    return CAREER_PROFILES.find((c) => c.id === 'community-manager');
+  }
+  if (clean.includes('business development') || clean.includes('account executive') || clean.includes('sales')) {
+    return CAREER_PROFILES.find((c) => c.id === 'hr-business-partner');
+  }
+  if (clean.includes('data researcher') || clean.includes('strategy analyst') || clean.includes('researcher')) {
+    return CAREER_PROFILES.find((c) => c.id === 'data-researcher');
+  }
+
+  // 4. Fuzzy includes
+  return CAREER_PROFILES.find(
+    (c) => clean.includes(c.id) || c.id.includes(clean) || clean.includes(c.title.toLowerCase()) || c.title.toLowerCase().includes(clean)
+  );
+}
+

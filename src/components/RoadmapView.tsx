@@ -210,10 +210,30 @@ export function RoadmapView({ overrideData, isPro: propIsPro }: RoadmapViewProps
                   {/* Phase Header */}
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <span className="text-xs font-bold px-3 py-1 rounded-full bg-blue-600 text-white uppercase tracking-wide">
                           Fase {phase.phase || (phaseIdx + 1)}
                         </span>
+                        {phaseIdx === 0 && (
+                          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Tingkat: Mudah
+                          </span>
+                        )}
+                        {phaseIdx === 1 && (
+                          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-sky-50 text-sky-700 border border-sky-200">
+                            Tingkat: Sedang
+                          </span>
+                        )}
+                        {phaseIdx === 2 && (
+                          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                            Tingkat: Menantang
+                          </span>
+                        )}
+                        {phaseIdx === 3 && (
+                          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                            Tingkat: Ekspert
+                          </span>
+                        )}
                         <span className="text-sm font-medium text-slate-500">{phase.duration || 'Beberapa Minggu'}</span>
                       </div>
                       <h3 className="text-2xl font-bold text-slate-900 leading-tight mb-1">{phase.title}</h3>

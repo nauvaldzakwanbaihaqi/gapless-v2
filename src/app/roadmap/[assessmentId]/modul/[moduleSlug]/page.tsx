@@ -4,7 +4,7 @@ import { db } from '@/db';
 import { assessmentResults, roadmapProgress } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '@/auth';
-import { CAREER_PROFILES, MODULE_DETAILS } from '@/data/gaplessData';
+import { CAREER_PROFILES, MODULE_DETAILS, findCareerProfile } from '@/data/gaplessData';
 import { Navbar } from '@/components/Navbar';
 import ModuleDetailClient from './ModuleDetailClient';
 
@@ -21,8 +21,6 @@ export default async function ModuleDetailPage({ params }: { params: Promise<{ a
     where: eq(assessmentResults.id, assessmentId)
   });
   
-
-
   const result = rawResult?.userId === session.user.id ? rawResult : null;
 
   if (!result) {
@@ -59,8 +57,8 @@ export default async function ModuleDetailPage({ params }: { params: Promise<{ a
   
   const moduleStatuses = (progressRecord?.moduleStatuses as Record<string, boolean>) || {};
 
-  // 3. Cocokkan profil karir
-  const profile = CAREER_PROFILES.find((c) => c.title === result.selectedCareer);
+  // 3. Cocokkan profil karir secara fleksibel & terstandarisasi
+  const profile = findCareerProfile(result.selectedCareer) || findCareerProfile(result.careerSlug as string) || CAREER_PROFILES[0];
   if (!profile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
@@ -73,14 +71,8 @@ export default async function ModuleDetailPage({ params }: { params: Promise<{ a
     );
   }
 
-  // Ambil roadmap dinamis dari DB, fallback ke statis jika belum di-generate
-  const slug = result.careerSlug || profile.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-  const { aiRoadmaps } = await import('@/db/schema');
-  const cachedRoadmap = await db.query.aiRoadmaps.findFirst({
-    where: eq(aiRoadmaps.careerSlug, slug)
-  });
-  
-  const activeRoadmap = cachedRoadmap ? (cachedRoadmap.roadmapData as any[]) : profile.roadmap;
+  // Roadmap terstandarisasi paten 4 fase (Mudah ke Ekspert)
+  const activeRoadmap = profile.roadmap;
 
   // 4. Cari fase mana yang memiliki modul ini, dan apakah modul ini valid
   const slugify = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
