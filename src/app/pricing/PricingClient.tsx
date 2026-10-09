@@ -88,6 +88,26 @@ export function PricingClient({ isLoggedIn, isPro: initialIsPro, periodEnd: init
 
   return (
     <div className="space-y-16">
+      {/* Header Section */}
+      <div className="text-center max-w-3xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-4"
+        >
+          <Sparkles className="w-3.5 h-3.5" />
+          Investasi Terjangkau untuk Masa Depan Kariermu
+        </motion.div>
+        <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
+          Pilihan Paket Belajar & <br />
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-600 via-indigo-600 to-sky-500">
+            Akselerasi Karier Impian
+          </span>
+        </h1>
+        <p className="mt-4 text-sm sm:text-base text-slate-600 max-w-2xl mx-auto leading-relaxed">
+          Mulai eksplorasi minat kariermu secara gratis, atau tingkatkan ke Gapless Pro untuk kurikulum lengkap dan bimbingan berkala.
+        </p>
+      </div>
 
       {/* 2 Main Pricing Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto items-stretch">
