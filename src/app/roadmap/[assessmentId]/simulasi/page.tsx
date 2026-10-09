@@ -5,6 +5,7 @@ import { assessmentResults, roadmapProgress } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { CAREER_PROFILES } from '@/data/gaplessData';
 import { getSimulationForCareer } from '@/data/industrySimulations';
+import { hasActivePro } from '@/lib/payment_service';
 import { Navbar } from '@/components/Navbar';
 import SimulationClient from './SimulationClient';
 import Link from 'next/link';
@@ -17,6 +18,11 @@ export default async function SimulationPage({
   const session = await auth();
   if (!session?.user?.id) {
     redirect('/api/auth/signin?callbackUrl=/roadmap');
+  }
+
+  const isPro = await hasActivePro(session.user.id);
+  if (!isPro) {
+    redirect('/pricing');
   }
 
   const { assessmentId } = await params;

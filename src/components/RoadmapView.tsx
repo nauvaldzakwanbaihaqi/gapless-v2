@@ -344,8 +344,8 @@ export function RoadmapView({ overrideData, isPro: propIsPro }: RoadmapViewProps
                     })}
                   </div>
 
-                  {/* Bagian Expert: Analisis Kesiapan Karier & Simulasi Proyek Industri (Hanya di Fase 4 & Khusus Pro) */}
-                  {phaseIdx === 3 && isPro && (
+                  {/* Bagian Expert: Analisis Kesiapan Karier & Simulasi Proyek Industri (Tersedia di Fase 4; untuk Free ikut di bawah overlay lock) */}
+                  {phaseIdx === 3 && (
                     <div className="mt-8 pt-8 border-t border-slate-100">
                       <div className="mb-4">
                         <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-2">

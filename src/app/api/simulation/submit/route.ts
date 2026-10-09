@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { roadmapProgress, assessmentResults } from '@/db/schema';
 import { eq, and } from 'drizzle-orm';
 import { auth } from '@/auth';
+import { hasActivePro } from '@/lib/payment_service';
 import { z } from 'zod';
 
 const RequestSchema = z.object({
@@ -16,6 +17,11 @@ export async function POST(req: Request) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const isPro = await hasActivePro(session.user.id);
+    if (!isPro) {
+      return NextResponse.json({ error: 'Fitur Simulasi Kerja hanya tersedia untuk pengguna Gapless Pro' }, { status: 403 });
     }
 
     const rawBody = await req.json();
