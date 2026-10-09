@@ -106,7 +106,7 @@ export function RoadmapView({ overrideData, isPro: propIsPro }: RoadmapViewProps
   return (
     <div className="min-h-screen bg-space">
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-12 pb-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 pb-12">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}

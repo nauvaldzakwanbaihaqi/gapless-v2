@@ -9,7 +9,7 @@ import {
   Crown, Compass, Target
 } from 'lucide-react';
 import Link from 'next/link';
-import { TRAIT_META, Trait } from '@/data/gaplessData';
+import { TRAIT_META, Trait, formatShortCareer } from '@/data/gaplessData';
 
 interface MissionProgressItem {
   progress: {
@@ -269,7 +269,7 @@ export function PassportClient({
                     }`}
                   >
                     <span>{isExploration ? '🧭' : '🎯'}</span>
-                    <span>{isExploration ? 'Eksplorasi' : 'Terarah'} • {a.careerTitle.split('/')[0].trim()}</span>
+                    <span>{isExploration ? 'Eksplorasi' : 'Terarah'} • {formatShortCareer(a.careerTitle)}</span>
                   </button>
                 );
               })}

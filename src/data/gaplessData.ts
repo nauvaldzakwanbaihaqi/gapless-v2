@@ -932,3 +932,15 @@ export function findCareerProfile(identifier?: string | null): CareerProfile | u
   );
 }
 
+export function formatShortCareer(title?: string | null): string {
+  if (!title) return 'Karier';
+  // Remove parenthetical notes like (Front/Back/Full-Stack) or (Front-End & Mobile focus)
+  let clean = title.replace(/\s*\([^)]*\)/g, '').trim();
+  // Split on " / " with spaces around slash (preserves UI/UX and AI/ML)
+  if (clean.includes(' / ')) {
+    clean = clean.split(' / ')[0].trim();
+  }
+  return clean || title;
+}
+
+

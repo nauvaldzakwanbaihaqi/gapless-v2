@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { CAREER_PROFILES as CAREERS, findCareerProfile, type CurriculumPhase } from '@/data/gaplessData';
+import { CAREER_PROFILES as CAREERS, findCareerProfile, formatShortCareer, type CurriculumPhase } from '@/data/gaplessData';
 import { RoadmapView } from '@/components/RoadmapView';
 import type { RoadmapNode } from '@/contexts/CareerContext';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
@@ -203,7 +203,7 @@ export default function RoadmapClient({ history, initialAssessmentId, serverUser
       <main className="flex-1">
         {/* Switcher Header - Tabs */}
         {history.length > 1 && (
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 pb-2">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 pt-6 pb-2">
             <div className="bg-white rounded-3xl p-5 sm:p-6 border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center gap-3.5">
               <div>
                 <h2 className="font-bold text-slate-900 text-base sm:text-lg">Riwayat Roadmap Kamu</h2>
@@ -217,7 +217,7 @@ export default function RoadmapClient({ history, initialAssessmentId, serverUser
                   const isSelected = selectedId === h.id;
                   const isExploration = h.quizType === 'belum_tahu_minat';
                   const careerTitle = h.selectedCareer || 'Karier';
-                  const shortCareer = careerTitle.split('/')[0].trim();
+                  const shortCareer = formatShortCareer(careerTitle);
 
                   return (
                     <button
@@ -232,7 +232,7 @@ export default function RoadmapClient({ history, initialAssessmentId, serverUser
                       title={careerTitle}
                     >
                       <span className="shrink-0">{isExploration ? '🧭' : '🎯'}</span>
-                      <span className="truncate max-w-[200px] sm:max-w-[280px]">
+                      <span className="truncate max-w-[200px] sm:max-w-[320px]">
                         {isExploration ? 'Eksplorasi' : 'Terarah'} • {shortCareer}
                       </span>
                     </button>
@@ -269,7 +269,7 @@ export default function RoadmapClient({ history, initialAssessmentId, serverUser
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-500"></div>
           </div>
         ) : overrideData ? (
-          <div className="-mt-12">
+          <div>
             <RoadmapView overrideData={overrideData} isPro={isPro} />
           </div>
         ) : (
