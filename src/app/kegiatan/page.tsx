@@ -55,7 +55,7 @@ export default async function KegiatanPage() {
       <Navbar />
       <LearningTabsNav />
 
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-8 pb-28 md:pb-8">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 pb-28 md:pb-8">
         <KegiatanClient
           activities={openActivities}
           savedIds={savedIds}

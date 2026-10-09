@@ -15,10 +15,11 @@ export function LearningTabsNav() {
   const pathname = usePathname();
 
   return (
-    <>
-      {/* Desktop tabs (horizontal, sticky top below navbar) */}
-      <div className="hidden md:flex items-center gap-1 bg-white/80 backdrop-blur-md border-b border-slate-200 px-4 sticky top-16 z-30">
-        <div className="max-w-7xl mx-auto w-full flex gap-1">
+    <div className="w-full pt-4 sm:pt-6">
+      {/* Content Container Aligned with Page Content */}
+      <div className="max-w-5xl mx-auto w-full px-4 sm:px-6">
+        {/* Desktop & Tablet Tabs (Inside Content Area with Distinct Top & Bottom Border Separator) */}
+        <div className="hidden md:flex items-center gap-1 border-b border-slate-200/90 overflow-x-auto [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {TABS.map((tab) => {
             const isActive = pathname === tab.href || pathname.startsWith(tab.href + '/');
             const Icon = tab.icon;
@@ -27,13 +28,13 @@ export function LearningTabsNav() {
                 key={tab.href}
                 href={tab.href}
                 id={tab.id}
-                className={`flex items-center gap-2 px-4 py-3.5 text-sm font-medium border-b-2 transition-all duration-200 ${
+                className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-all duration-200 whitespace-nowrap rounded-t-xl ${
                   isActive
-                    ? 'border-blue-600 text-blue-700 bg-blue-50/50'
-                    : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 hover:bg-slate-50'
+                    ? 'border-blue-600 text-blue-700 bg-blue-50/60 font-semibold'
+                    : 'border-transparent text-slate-500 hover:text-slate-800 hover:border-slate-300 hover:bg-slate-50/80'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : ''}`} />
+                <Icon className={`w-4 h-4 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
                 {tab.label}
               </Link>
             );
@@ -41,8 +42,8 @@ export function LearningTabsNav() {
         </div>
       </div>
 
-      {/* Mobile bottom tabs */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 safe-area-pb">
+      {/* Mobile Bottom Fixed Tab Bar (Preserved for Mobile Ergonomics) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 safe-area-pb shadow-lg">
         <div className="flex">
           {TABS.map((tab) => {
             const isActive = pathname === tab.href || pathname.startsWith(tab.href + '/');
@@ -53,18 +54,18 @@ export function LearningTabsNav() {
                 href={tab.href}
                 id={`${tab.id}-mobile`}
                 className={`flex-1 flex flex-col items-center gap-1 py-2 px-1 transition-all duration-200 ${
-                  isActive ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'
+                  isActive ? 'text-blue-600 font-semibold' : 'text-slate-400 hover:text-slate-600'
                 }`}
               >
                 <div className={`p-1.5 rounded-xl transition-all ${isActive ? 'bg-blue-50' : ''}`}>
                   <Icon className="w-5 h-5" />
                 </div>
-                <span className="text-[10px] font-medium leading-none">{tab.label}</span>
+                <span className="text-[10px] leading-none">{tab.label}</span>
               </Link>
             );
           })}
         </div>
       </div>
-    </>
+    </div>
   );
 }
