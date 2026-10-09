@@ -454,11 +454,13 @@ export const affiliateClicksRelations = relations(affiliateClicks, ({ one }) => 
 // ──────────────────────────────────────────────
 
 export const products = pgTable("products", {
-  key: text("key").primaryKey(), // 'gap_report'
+  key: text("key").primaryKey(), // 'pro_monthly' | 'gap_report'
   name: text("name").notNull(),
-  price: integer("price").notNull().default(9900),
-  priceFormatted: text("price_formatted").notNull().default("Rp 9.900"),
+  type: text("type").notNull().default("subscription"), // 'subscription' | 'one_time'
+  price: integer("price").notNull(),
+  priceFormatted: text("price_formatted").notNull(),
   description: text("description"),
+  isActive: boolean("is_active").default(true).notNull(),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
 
@@ -469,16 +471,16 @@ export const products = pgTable("products", {
 export const userPurchases = pgTable("user_purchases", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  productKey: text("product_key").notNull(),
-  careerSlug: text("career_slug"), // Nullable jika produk global, terisi jika per-career
+  productKey: text("product_key").notNull(), // 'pro_monthly' | 'gap_report'
+  careerSlug: text("career_slug"),           // Nullable jika produk global (Pro), terisi jika per-career
   amount: integer("amount").notNull(),
+  periodStart: timestamp("period_start", { mode: "date" }),
+  periodEnd: timestamp("period_end", { mode: "date" }), // Masa aktif langganan Pro
+  isActive: boolean("is_active").default(true).notNull(),
   isMockPayment: boolean("is_mock_payment").default(true).notNull(),
   purchasedAt: timestamp("purchased_at", { mode: "date" }).defaultNow().notNull(),
   metadata: jsonb("metadata"),
-}, (t) => ({
-  userProductCareerUnique: uniqueIndex("user_product_career_unique")
-    .on(t.userId, t.productKey, t.careerSlug),
-}));
+});
 
 export const userPurchasesRelations = relations(userPurchases, ({ one }) => ({
   user: one(users, { fields: [userPurchases.userId], references: [users.id] }),

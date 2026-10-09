@@ -69,7 +69,7 @@ interface Props {
   userActivities: ActivityEvidenceItem[];
   snapshots: SnapshotItem[];
   publicProfile: PublicProfile | null;
-  isPlus: boolean;
+  isPro: boolean;
 }
 
 const COMPETENCIES = [
@@ -89,7 +89,7 @@ export function PassportClient({
   userActivities,
   snapshots,
   publicProfile: initialPublicProfile,
-  isPlus,
+  isPro,
 }: Props) {
   const [profile, setProfile] = useState<PublicProfile | null>(initialPublicProfile);
   const [isTogglingLink, setIsTogglingLink] = useState(false);
@@ -146,7 +146,7 @@ export function PassportClient({
                 <span className="p-1 rounded-md bg-blue-50 text-blue-600" title="Terverifikasi Gapless">
                   <Shield className="w-4 h-4" />
                 </span>
-                {isPlus ? (
+                {isPro ? (
                   <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-linear-to-r from-blue-600 to-indigo-600 text-white shadow-sm">
                     PLUS
                   </span>

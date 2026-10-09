@@ -1,5 +1,7 @@
 "use client";
 
+import Link from 'next/link';
+
 import { signIn, signOut } from "next-auth/react";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { LogOut, User } from "lucide-react";
@@ -38,9 +40,13 @@ export default function AuthButton({ variant = 'light' }: AuthButtonProps) {
                     <p className={`font-bold leading-none ${isDark ? 'text-white' : 'text-slate-900'}`}>
                         {session.user.name}
                     </p>
-                    <p className={`text-[11px] mt-0.5 truncate max-w-[140px] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                        {session.user.email}
-                    </p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                        <Link href="/pricing" className={`text-[10px] font-bold transition ${
+                            isDark ? 'text-blue-400 hover:underline' : 'text-blue-600 hover:underline'
+                        }`}>
+                            Gapless Pro
+                        </Link>
+                    </div>
                 </div>
 
                 <button 

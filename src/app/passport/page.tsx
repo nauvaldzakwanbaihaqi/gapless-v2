@@ -1,3 +1,4 @@
+import { hasActivePro } from '@/lib/payment_service';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { Navbar } from '@/components/Navbar';
@@ -23,8 +24,8 @@ export default async function PassportPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/api/auth/signin?callbackUrl=/passport');
 
-  const tier = (session.user as any).tier;
-  const ent = getEntitlements(tier);
+  const isPro = await hasActivePro(session.user.id);
+  const ent = getEntitlements(isPro);
 
   // Ambil user detail
   const user = await db
@@ -104,7 +105,7 @@ export default async function PassportPage() {
           userActivities={userActivities}
           snapshots={snapshots}
           publicProfile={publicProfile[0] || null}
-          isPlus={ent.isPlus}
+          isPro={ent.isPro}
         />
       </main>
     </div>

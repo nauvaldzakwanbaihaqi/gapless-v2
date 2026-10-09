@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { auth } from '@/auth';
 import { checkRateLimit } from '@/lib/rateLimit';
-import { hasPurchased } from '@/lib/payment_service';
+import { hasGapReport } from '@/lib/payment_service';
 
 const google = createGoogleGenerativeAI({ apiKey: process.env.GEMINI_API_KEY || '' });
 
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     const careerSlug = rawSlug || roleName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
     // Cek apakah user telah membeli Laporan Gap untuk career path ini
-    const isPurchased = await hasPurchased(session.user.id, 'gap_report', careerSlug);
+    const isPurchased = await hasGapReport(session.user.id, careerSlug);
 
     // 🔒 GATING: Jika belum bayar, return 402 + Ringkasan Teks Gratis Saja (Tanpa Nilai Skor & Tanpa Radar Data)
     if (!isPurchased) {

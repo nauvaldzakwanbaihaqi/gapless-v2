@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { recordPurchase, PRODUCTS_CONFIG } from '@/lib/payment_service';
+import { subscribeProMock, buyGapReportMock, PRODUCTS_CONFIG } from '@/lib/payment_service';
 import { z } from 'zod';
 
 const purchaseSchema = z.object({
-  productKey: z.string().default('gap_report'),
-  careerSlug: z.string().min(1, 'Career slug wajib diisi'),
+  productKey: z.enum(['pro_monthly', 'gap_report']).default('gap_report'),
+  careerSlug: z.string().optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -26,31 +26,44 @@ export async function POST(req: NextRequest) {
     }
 
     const { productKey, careerSlug } = parsed.data;
-    const product = PRODUCTS_CONFIG[productKey];
 
-    if (!product) {
-      return NextResponse.json({ error: 'Produk tidak ditemukan' }, { status: 404 });
+    if (productKey === 'pro_monthly') {
+      const result = await subscribeProMock(
+        session.user.id,
+        session.user.email,
+        session.user.name
+      );
+      return NextResponse.json({
+        success: true,
+        message: 'Langganan Gapless Pro berhasil diaktifkan!',
+        periodEnd: result.periodEnd,
+        purchase: result.purchase,
+      });
     }
 
-    const result = await recordPurchase({
-      userId: session.user.id,
-      productKey,
-      careerSlug,
-      amount: product.price,
-      isMockPayment: true,
-      metadata: {
-        purchasedByEmail: session.user.email,
-        purchasedByName: session.user.name,
-      },
-    });
+    if (productKey === 'gap_report') {
+      if (!careerSlug) {
+        return NextResponse.json({ error: 'Career slug wajib diisi untuk laporan gap' }, { status: 400 });
+      }
 
-    return NextResponse.json({
-      success: true,
-      message: result.alreadyPurchased
-        ? 'Akses untuk produk ini sudah aktif.'
-        : 'Pembayaran berhasil dikonfirmasi! Laporan lengkap telah terbuka.',
-      purchase: result.purchase,
-    });
+      const result = await buyGapReportMock({
+        userId: session.user.id,
+        careerSlug,
+        userEmail: session.user.email,
+        userName: session.user.name,
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: result.alreadyPurchased
+          ? 'Laporan gap untuk karier ini sudah pernah dibeli.'
+          : 'Pembayaran berhasil dikonfirmasi! Laporan gap mendalam telah terbuka.',
+        alreadyPurchased: result.alreadyPurchased,
+        purchase: result.purchase,
+      });
+    }
+
+    return NextResponse.json({ error: 'Produk tidak valid' }, { status: 400 });
   } catch (error) {
     console.error('Mock purchase error:', error);
     return NextResponse.json({ error: 'Terjadi kesalahan sistem' }, { status: 500 });

@@ -3,7 +3,7 @@ import { auth } from '@/auth';
 import { db } from '@/db';
 import { users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
-import { isPlusUser } from '@/config/plan';
+import { hasActivePro } from '@/lib/payment_service';
 
 export async function GET() {
   try {
@@ -25,7 +25,7 @@ export async function GET() {
     }
 
     const tier = userInDb[0].tier || 'FREE';
-    const isPro = isPlusUser(tier);
+    const isPro = await hasActivePro(userInDb[0].id);
 
     return NextResponse.json({ isValid: true, tier, isPro }, { status: 200 });
   } catch (error) {

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { CheckCircle2, ChevronDown, RotateCcw, Lock, Home } from 'lucide-react';
 import { useGaplessContext } from '@/contexts/CareerContext';
 import { useAuthGuard } from '@/hooks/useAuthGuard';
-import { isPlusUser } from '@/config/plan';
+
 import Link from 'next/link';
 import type { CareerProfile } from '@/data/gaplessData';
 import type { RoadmapNode } from '@/contexts/CareerContext';
@@ -91,7 +91,7 @@ export function RoadmapView({ overrideData, isPro: propIsPro }: RoadmapViewProps
   if (!selectedCareer) return null;
 
   const userTier = (session?.user as { tier?: string })?.tier || 'Free';
-  const isPro = propIsPro !== undefined ? propIsPro : isPlusUser(userTier);
+  const isPro = Boolean(propIsPro);
 
 
   const totalModules = roadmapWithProgress.reduce(
@@ -168,6 +168,27 @@ export function RoadmapView({ overrideData, isPro: propIsPro }: RoadmapViewProps
                     isActivePhase ? 'border-2 border-blue-600 ring-4 ring-blue-50 shadow-md' : 'border border-slate-200 shadow-sm'
                   }`}
                 >
+                  {/* Pro Lock Overlay */}
+                  {isProLocked && (
+                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center backdrop-blur-xs bg-white/50">
+                      <div className="bg-white/95 backdrop-blur-md border border-slate-200 p-8 rounded-3xl shadow-xl flex flex-col items-center max-w-sm">
+                        <div className="w-14 h-14 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-md mb-4 text-white">
+                          <Lock className="w-6 h-6" />
+                        </div>
+                        <span className="text-[11px] font-extrabold px-3 py-1 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white uppercase tracking-wider mb-2 shadow-xs">
+                          Khusus Gapless Pro
+                        </span>
+                        <h4 className="font-bold text-slate-900 text-xl mb-2">Fase {phase.phase || (phaseIdx + 1)} Terkunci</h4>
+                        <p className="text-sm text-slate-600 mb-6 px-2 leading-relaxed">
+                          Upgrade ke Gapless Pro untuk membuka fase kurikulum lanjutan 3 & 4 ini dan maksimalkan persiapan kariermu.
+                        </p>
+                        <Link href="/pricing" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-3 rounded-xl text-sm font-bold transition-all shadow-md hover:shadow-lg w-full">
+                          Mulai Gapless Pro (Rp29.000)
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Prerequisite Sequential Lock Overlay (Beda tampilan dengan Pro) */}
                   {isPrereqLocked && (
                     <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-6 text-center backdrop-blur-xs bg-slate-50/40">

@@ -1,3 +1,4 @@
+import { hasActivePro } from '@/lib/payment_service';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { Navbar } from '@/components/Navbar';
@@ -14,8 +15,8 @@ export default async function MisiPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/api/auth/signin?callbackUrl=/misi');
 
-  const tier = (session.user as any).tier;
-  const ent = getEntitlements(tier);
+  const isPro = await hasActivePro(session.user.id);
+  const ent = getEntitlements(isPro);
 
   // Ambil semua misi aktif, sort by order
   const allMissions = await db
@@ -52,9 +53,9 @@ export default async function MisiPage() {
           progressMap={progressMap}
           lockedCount={lockedCount}
           entitlements={{
-            isPlusUser: ent.isPlusUser,
+            isPro: ent.isPro,
             canSeeCompetencyBars: ent.missions.canSeeCompetencyBars,
-            canSeeSuggestions: ent.missions.canSeeSuggestions,
+            canSeeSuggestions: ent.missions.canSeeFeedback,
           }}
           showSampleLabel={true}
         />

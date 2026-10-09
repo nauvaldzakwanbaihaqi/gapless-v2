@@ -1,3 +1,4 @@
+import { hasActivePro } from '@/lib/payment_service';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { db } from '@/db';
@@ -71,8 +72,8 @@ export default async function RoadmapPage({ searchParams }: RoadmapPageProps) {
     );
   }
 
-  const userTier = (session.user as { tier?: string })?.tier || 'Free';
-  const isPro = Boolean(userTier && (userTier.toLowerCase().includes('pro') || userTier.toLowerCase().includes('premium')));
+  const isPro = await hasActivePro(session.user.id);
+  const userTier = isPro ? 'Pro' : 'Free';
 
   return (
     <RoadmapClient 

@@ -6,7 +6,7 @@ import { CAREER_PROFILES } from '@/data/gaplessData';
 import { auth } from '@/auth';
 import { z } from 'zod';
 import { checkRateLimit } from '@/lib/rateLimit';
-import { isPlusUser } from '@/config/plan';
+import { hasActivePro } from '@/lib/payment_service';
 import { matchCareerToOnet } from '@/lib/onetMatcher';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
@@ -28,7 +28,19 @@ const RequestSchema = z.object({
 });
 
 function redactRoadmap(roadmap: any[]) {
-  return roadmap; // Semua 4 fase terbuka penuh
+  if (!Array.isArray(roadmap)) return roadmap;
+  return roadmap.map((phase, idx) => {
+    if (idx >= 2) {
+      return {
+        ...phase,
+        title: `Fase ${idx + 1} (Khusus Gapless Pro)`,
+        subtitle: 'Materi lanjutan & kurikulum industri terapan.',
+        description: 'Upgrade ke Gapless Pro untuk membuka fase kurikulum lanjutan ini.',
+        modules: phase.modules.map((_: any, i: number) => `Materi Khusus Pro ${i + 1}`),
+      };
+    }
+    return phase;
+  });
 }
 
 export async function POST(req: Request) {
@@ -39,7 +51,7 @@ export async function POST(req: Request) {
     }
 
     const userTier = (session.user as any).tier || 'Free';
-    const isPro = isPlusUser(userTier);
+    const isPro = await hasActivePro(session.user.id);
 
 
     const rawBody = await req.json();

@@ -1,69 +1,66 @@
-export const ENTITLEMENT_CONFIG = {
-  FREE_MISSIONS_LIMIT: Infinity,
-  FREE_ACTIVITIES_LIMIT: Infinity,
-  FREE_ROADMAP_MAX_PHASE: Infinity,
-} as const;
-
-import { isPlusUser } from '@/config/plan';
-
 export interface Entitlements {
-  isPlusUser: boolean;
-  isPlus: boolean;
+  isPro: boolean;
   roadmap: {
     maxOpenPhase: number;
-    canSeePartnerCourses: boolean;
-    canSeeProjects: boolean;
-    autoUpdateAfterRetake: boolean;
+    canSeeAllGaps: boolean;
+    canSeeWeeklyPlan: boolean;
   };
   missions: {
     limit: number;
+    canSeeMonthlyPackage: boolean;
+    canSeeFeedback: boolean;
     canSeeCompetencyBars: boolean;
-    canSeeSuggestions: boolean;
   };
   activities: {
     limit: number;
+    canSeeFilters: boolean;
+    canSeeFitReason: boolean;
+    canSeeDeadlines: boolean;
     sortBy: 'gap-match' | 'deadline';
-    canSeeMatchPercent: boolean;
   };
   passport: {
-    showDetailedScores: boolean;
-    showTrend: boolean;
-    showProjectEvidence: boolean;
     canShareProfile: boolean;
+    showVerifiedBadge: boolean;
+    showDetailedScores: boolean;
+    maxEvidenceUploads: number;
+  };
+  assessment: {
+    isUnlimited: boolean;
   };
 }
 
 /**
- * getEntitlements — Semua user mendapatkan akses 100% gratis ke seluruh fitur inti.
- * Model baru bersifat A La Carte (pembelian per produk tertentu seperti gap report).
+ * getEntitlements — Sumber kebenaran hak akses user berdasarkan status Gapless Pro
  */
-export function getEntitlements(_tier?: string | null): Entitlements {
+export function getEntitlements(isPro: boolean): Entitlements {
   return {
-    isPlusUser: true,
-    isPlus: true,
+    isPro,
     roadmap: {
-      maxOpenPhase: Infinity,
-      canSeePartnerCourses: true,
-      canSeeProjects: true,
-      autoUpdateAfterRetake: true,
+      maxOpenPhase: isPro ? 4 : 2,
+      canSeeAllGaps: isPro,
+      canSeeWeeklyPlan: isPro,
     },
     missions: {
-      limit: Infinity,
-      canSeeCompetencyBars: true,
-      canSeeSuggestions: true,
+      limit: isPro ? Infinity : 4,
+      canSeeMonthlyPackage: isPro,
+      canSeeFeedback: isPro,
+      canSeeCompetencyBars: isPro,
     },
     activities: {
-      limit: Infinity,
-      sortBy: 'gap-match',
-      canSeeMatchPercent: true,
+      limit: isPro ? Infinity : 3,
+      canSeeFilters: isPro,
+      canSeeFitReason: isPro,
+      canSeeDeadlines: isPro,
+      sortBy: isPro ? 'gap-match' : 'deadline',
     },
     passport: {
-      showDetailedScores: true,
-      showTrend: true,
-      showProjectEvidence: true,
-      canShareProfile: true,
+      canShareProfile: isPro,
+      showVerifiedBadge: isPro,
+      showDetailedScores: isPro,
+      maxEvidenceUploads: isPro ? 20 : 2,
+    },
+    assessment: {
+      isUnlimited: isPro,
     },
   };
 }
-
-export type ClientEntitlements = Omit<Entitlements, never>;

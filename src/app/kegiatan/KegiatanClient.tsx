@@ -35,7 +35,7 @@ interface Props {
   activities: ActivityItem[];
   savedIds: string[];
   evidenceMap: Record<string, EvidenceItem>;
-  isPlus: boolean;
+  isPro: boolean;
   lockedCount: number;
   monthlyQuota: number;
 }
@@ -44,7 +44,7 @@ export function KegiatanClient({
   activities,
   savedIds: initialSavedIds,
   evidenceMap: initialEvidenceMap,
-  isPlus,
+  isPro,
   lockedCount,
   monthlyQuota,
 }: Props) {
@@ -365,6 +365,30 @@ export function KegiatanClient({
       )}
 
 
+
+      {/* Locked Teaser for Free Users */}
+      {!isPro && lockedCount > 0 && (
+        <div className="relative rounded-3xl p-6 md:p-8 bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950 text-white overflow-hidden shadow-xl border border-indigo-900/50">
+          <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+            <div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-semibold border border-indigo-400/30 mb-3">
+                <Lock className="w-3.5 h-3.5" />
+                +{lockedCount} Kegiatan Terkurasi Lainnya di Gapless Pro
+              </div>
+              <h3 className="text-xl font-bold">Buka Seluruh Rekomendasi Kegiatan & Urutan Gap</h3>
+              <p className="text-xs text-indigo-200/80 max-w-xl mt-1.5 leading-relaxed">
+                Di paket Gapless Pro, kamu bisa melihat seluruh katalog kegiatan aktif, diurutkan berdasarkan kecocokan terbesar terhadap skill gap kariermu beserta filter lengkap.
+              </p>
+            </div>
+            <Link
+              href="/pricing"
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white text-xs font-bold shadow-md transition whitespace-nowrap shrink-0"
+            >
+              Mulai Gapless Pro (Rp29.000)
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Modal Submit Evidence */}
       <AnimatePresence>

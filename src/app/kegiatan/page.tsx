@@ -1,3 +1,4 @@
+import { hasActivePro } from '@/lib/payment_service';
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
 import { Navbar } from '@/components/Navbar';
@@ -14,8 +15,8 @@ export default async function KegiatanPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/api/auth/signin?callbackUrl=/kegiatan');
 
-  const tier = (session.user as any).tier;
-  const ent = getEntitlements(tier);
+  const isPro = await hasActivePro(session.user.id);
+  const ent = getEntitlements(isPro);
 
   // Ambil kegiatan aktif
   // Urutan: Free by deadline terdekat, Plus by sortOrder / match
@@ -23,7 +24,7 @@ export default async function KegiatanPage() {
     .select()
     .from(activities)
     .where(eq(activities.isActive, true))
-    .orderBy(ent.isPlus ? asc(activities.sortOrder) : asc(activities.deadline));
+    .orderBy(ent.isPro ? asc(activities.sortOrder) : asc(activities.deadline));
 
   // Ambil saved activities user
   const savedRows = await db
@@ -60,7 +61,7 @@ export default async function KegiatanPage() {
           activities={openActivities}
           savedIds={savedIds}
           evidenceMap={evidenceMap}
-          isPlus={ent.isPlus}
+          isPro={ent.isPro}
           lockedCount={lockedCount}
           monthlyQuota={ent.activities.limit}
         />

@@ -80,7 +80,7 @@ interface MisiClientProps {
   progressMap: Record<string, MissionProgress>;
   lockedCount: number;
   entitlements: {
-    isPlusUser: boolean;
+    isPro: boolean;
     canSeeCompetencyBars: boolean;
     canSeeSuggestions: boolean;
   };
