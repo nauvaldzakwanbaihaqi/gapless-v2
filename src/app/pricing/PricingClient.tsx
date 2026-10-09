@@ -99,14 +99,6 @@ export function PricingClient({ isLoggedIn, isPro: initialIsPro, periodEnd: init
     <div className="space-y-16">
       {/* Header Section */}
       <div className="text-center max-w-3xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold mb-4"
-        >
-          <Sparkles className="w-3.5 h-3.5" />
-          Investasi Terjangkau untuk Masa Depan Kariermu
-        </motion.div>
         <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
           Pilihan Paket Belajar & <br />
           <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-600 via-indigo-600 to-sky-500">
