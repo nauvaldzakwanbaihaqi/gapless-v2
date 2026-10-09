@@ -46,11 +46,10 @@ export default async function RoadmapPage({ searchParams }: RoadmapPageProps) {
     .where(
       and(
         eq(assessmentResults.userId, session.user.id),
-        eq(assessmentResults.isActive, true),
         isNotNull(assessmentResults.selectedCareer)
       )
     )
-    .orderBy(desc(assessmentResults.createdAt));
+    .orderBy(desc(assessmentResults.isActive), desc(assessmentResults.createdAt));
 
   if (history.length === 0) {
     return (
