@@ -25,6 +25,7 @@ export const users = pgTable("user", {
   password: text("password"), // Untuk credentials login
   image: text("image"),
   tier: text("tier").default("FREE").notNull(), // Penanda FREE atau PREMIUM
+  role: text("role").default("USER").notNull(), // "USER" | "ADMIN"
 });
 
 export const accounts = pgTable(
@@ -505,3 +506,68 @@ export const learningResources = pgTable("learning_resources", {
   sortOrder: integer("sort_order").default(0),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
 });
+
+// ──────────────────────────────────────────────
+// FEEDBACK AI UNTUK MISI (KHUSUS PRO)
+// ──────────────────────────────────────────────
+
+export const missionFeedbacks = pgTable("mission_feedbacks", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  missionId: text("mission_id").notNull().references(() => softSkillMissions.id, { onDelete: "cascade" }),
+  submissionText: text("submission_text").notNull(),
+  aiFeedback: text("ai_feedback").notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+});
+
+export const missionFeedbacksRelations = relations(missionFeedbacks, ({ one }) => ({
+  user: one(users, { fields: [missionFeedbacks.userId], references: [users.id] }),
+  mission: one(softSkillMissions, { fields: [missionFeedbacks.missionId], references: [softSkillMissions.id] }),
+}));
+
+// ──────────────────────────────────────────────
+// EVENT READINESS (IDEMPOTENT LOGGING)
+// ──────────────────────────────────────────────
+
+export const readinessEvents = pgTable("readiness_events", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  sourceType: text("source_type").notNull(), // 'mission' | 'certificate'
+  sourceId: text("source_id").notNull(),     // missionId atau certificateId
+  boostAmount: integer("boost_amount").notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+}, (t) => ({
+  userSourceUnique: uniqueIndex("user_readiness_source_unique").on(t.userId, t.sourceType, t.sourceId),
+}));
+
+export const readinessEventsRelations = relations(readinessEvents, ({ one }) => ({
+  user: one(users, { fields: [readinessEvents.userId], references: [users.id] }),
+}));
+
+// ──────────────────────────────────────────────
+// SERTIFIKAT & PORTOFOLIO
+// ──────────────────────────────────────────────
+
+export const certificates = pgTable("certificates", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  judul: text("judul").notNull(),
+  penyelenggara: text("penyelenggara").notNull(),
+  tanggalTerbit: date("tanggal_terbit").notNull(),
+  kategoriSkill: text("kategori_skill"),
+  fileStorageKey: text("file_storage_key").notNull(),
+  fileMimeType: text("file_mime_type").notNull(),
+  fileSize: integer("file_size").notNull(),
+  status: text("status").default("Menunggu Review").notNull(), // "Menunggu Review" | "Tervalidasi" | "Ditolak"
+  adminNote: text("admin_note"),
+  readinessBoostApplied: integer("readiness_boost_applied").default(0).notNull(),
+  source: text("source").default("passport").notNull(), // "passport" | "kegiatan"
+  activityId: text("activity_id"),
+  createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
+  reviewedAt: timestamp("reviewed_at", { mode: "date" }),
+});
+
+export const certificatesRelations = relations(certificates, ({ one }) => ({
+  user: one(users, { fields: [certificates.userId], references: [users.id] }),
+}));
+

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Target, CheckCircle2, Clock, Lock, ChevronRight,
   Zap, Users, Shield, Handshake, RefreshCw, MessageSquare,
-  TrendingUp, Star, AlertCircle
+  TrendingUp, Star, AlertCircle, Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -73,13 +73,16 @@ interface Mission {
 
 interface MissionProgress {
   status: string;
-  submissionText: string | null;
-  completedAt: Date | null;
+  notes?: string | null;
+  submissionText?: string | null;
+  completedAt?: Date | null;
 }
 
 interface MisiClientProps {
   missions: Mission[];
   progressMap: Record<string, MissionProgress>;
+  feedbackMap?: Record<string, string>;
+  isPro?: boolean;
   lockedCount: number;
   entitlements: {
     isPro: boolean;
@@ -99,12 +102,21 @@ function groupByCompetency(missions: Mission[]) {
   return groups;
 }
 
-export function MisiClient({ missions, progressMap, lockedCount, entitlements, showSampleLabel }: MisiClientProps) {
+export function MisiClient({
+  missions,
+  progressMap,
+  feedbackMap = {},
+  isPro = false,
+  lockedCount,
+  entitlements,
+  showSampleLabel,
+}: MisiClientProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [submissionText, setSubmissionText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [lockedMissionModal, setLockedMissionModal] = useState<Mission | null>(null);
+  const [feedbacks, setFeedbacks] = useState<Record<string, string>>(feedbackMap);
 
   const groups = groupByCompetency(missions);
   const allCompetencies = Object.keys(COMPETENCY_CONFIG);
@@ -125,8 +137,11 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
         body: JSON.stringify({ submissionText }),
       });
       if (res.ok) {
+        const data = await res.json();
+        if (data.feedback) {
+          setFeedbacks((prev) => ({ ...prev, [missionId]: data.feedback }));
+        }
         setSubmittedId(missionId);
-        setExpandedId(null);
         setSubmissionText('');
       }
     } catch {
@@ -307,7 +322,7 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
                     </button>
 
                     <AnimatePresence>
-                      {isExpanded && !isCompleted && !isLocked && (
+                      {isExpanded && !isLocked && (
                         <motion.div
                           initial={{ height: 0, opacity: 0 }}
                           animate={{ height: 'auto', opacity: 1 }}
@@ -315,41 +330,101 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
                           transition={{ duration: 0.25 }}
                           className="overflow-hidden"
                         >
-                          <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
-                            <p className="text-sm text-slate-600 leading-relaxed">
-                              {mission.description}
-                            </p>
-                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700 flex gap-2">
-                              <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-                              <span>
-                                Jawaban ini hanya dinilai oleh kamu sendiri — akan dicatat sebagai{' '}
-                                <strong>"Diisi sendiri"</strong> di Skill Passport.
-                              </span>
+                          {isCompleted ? (
+                            <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
+                              <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200/60">
+                                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                                <span>Misi ini telah diselesaikan! (+1% Skill Readiness)</span>
+                              </div>
+
+                              {mission.description && (
+                                <p className="text-xs text-slate-500 leading-relaxed">
+                                  {mission.description}
+                                </p>
+                              )}
+
+                              {/* Jawaban / Refleksi User */}
+                              {(progressMap[mission.id]?.notes || progressMap[mission.id]?.submissionText) && (
+                                <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-xs text-slate-700 space-y-1">
+                                  <span className="font-semibold text-slate-500 block">Refleksi / Jawaban Kamu:</span>
+                                  <p className="text-slate-800 whitespace-pre-wrap leading-relaxed">
+                                    {progressMap[mission.id]?.notes || progressMap[mission.id]?.submissionText}
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Feedback AI khusus Pro */}
+                              {feedbacks[mission.id] ? (
+                                <div className="bg-gradient-to-br from-indigo-50/90 via-blue-50/60 to-purple-50/70 border border-indigo-200 rounded-2xl p-4 space-y-2 shadow-xs">
+                                  <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-900">
+                                    <Sparkles className="w-4 h-4 text-indigo-600" />
+                                    <span>Evaluasi & Feedback Career Coach AI</span>
+                                  </div>
+                                  <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">
+                                    {feedbacks[mission.id]}
+                                  </p>
+                                </div>
+                              ) : isPro ? (
+                                <div className="text-xs text-slate-500 italic bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                  Refleksi tersimpan secara mandiri di Skill Passport.
+                                </div>
+                              ) : (
+                                <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950 text-white rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md border border-indigo-900/50">
+                                  <div>
+                                    <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-300 mb-1">
+                                      <Sparkles className="w-3.5 h-3.5 text-indigo-400" />
+                                      Dapatkan Evaluasi Refleksi dari AI
+                                    </div>
+                                    <p className="text-[11px] text-indigo-200/80 leading-relaxed">
+                                      Upgrade ke Gapless Pro untuk mendapatkan evaluasi personal dan saran konkret dari Career Coach AI pada setiap misi.
+                                    </p>
+                                  </div>
+                                  <Link
+                                    href="/pricing"
+                                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs whitespace-nowrap transition shrink-0"
+                                  >
+                                    Mulai Gapless Pro
+                                  </Link>
+                                </div>
+                              )}
                             </div>
-                            <textarea
-                              value={submissionText}
-                              onChange={(e) => setSubmissionText(e.target.value)}
-                              placeholder="Tulis refleksi atau jawaban kamu di sini..."
-                              rows={4}
-                              className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            />
-                            <div className="flex gap-2 justify-end">
-                              <button
-                                onClick={() => setExpandedId(null)}
-                                className="text-sm text-slate-500 px-4 py-2 hover:text-slate-700 cursor-pointer"
-                              >
-                                Batal
-                              </button>
-                              <button
-                                onClick={() => handleSubmit(mission.id)}
-                                disabled={!submissionText.trim() || isSubmitting}
-                                id={`submit-mission-${mission.id}`}
-                                className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-5 py-2 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                              >
-                                {isSubmitting ? 'Menyimpan...' : 'Kirim Hasil'}
-                              </button>
+                          ) : (
+                            <div className="px-4 pb-4 border-t border-slate-100 pt-3 space-y-3">
+                              <p className="text-sm text-slate-600 leading-relaxed">
+                                {mission.description}
+                              </p>
+                              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-700 flex gap-2">
+                                <AlertCircle className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+                                <span>
+                                  Jawaban ini hanya dinilai oleh kamu sendiri — akan dicatat sebagai{' '}
+                                  <strong>"Diisi sendiri"</strong> di Skill Passport.
+                                </span>
+                              </div>
+                              <textarea
+                                value={submissionText}
+                                onChange={(e) => setSubmissionText(e.target.value)}
+                                placeholder="Tulis refleksi atau jawaban kamu di sini..."
+                                rows={4}
+                                className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              />
+                              <div className="flex gap-2 justify-end">
+                                <button
+                                  onClick={() => setExpandedId(null)}
+                                  className="text-sm text-slate-500 px-4 py-2 hover:text-slate-700 cursor-pointer"
+                                >
+                                  Batal
+                                </button>
+                                <button
+                                  onClick={() => handleSubmit(mission.id)}
+                                  disabled={!submissionText.trim() || isSubmitting}
+                                  id={`submit-mission-${mission.id}`}
+                                  className="flex items-center gap-2 bg-blue-600 text-white text-sm font-medium px-5 py-2 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                >
+                                  {isSubmitting ? 'Menyimpan...' : 'Kirim Hasil'}
+                                </button>
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </motion.div>
                       )}
                     </AnimatePresence>

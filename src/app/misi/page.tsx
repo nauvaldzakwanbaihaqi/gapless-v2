@@ -5,7 +5,7 @@ import { Navbar } from '@/components/Navbar';
 import { LearningTabsNav } from '@/components/LearningTabsNav';
 import { getEntitlements } from '@/lib/entitlements';
 import { db } from '@/db';
-import { softSkillMissions, userMissionProgress } from '@/db/schema';
+import { softSkillMissions, userMissionProgress, missionFeedbacks } from '@/db/schema';
 import { eq, asc } from 'drizzle-orm';
 import { MisiClient } from './MisiClient';
 
@@ -37,6 +37,16 @@ export default async function MisiPage() {
 
   const progressMap = Object.fromEntries(
     progressRows.map((p) => [p.missionId, p])
+  );
+
+  // Ambil feedback AI user yang sudah tersimpan
+  const userFeedbacks = await db
+    .select()
+    .from(missionFeedbacks)
+    .where(eq(missionFeedbacks.userId, session.user.id));
+
+  const feedbackMap = Object.fromEntries(
+    userFeedbacks.map((f) => [f.missionId, f.aiFeedback])
   );
 
   // Gating per grup kompetensi:
@@ -72,6 +82,8 @@ export default async function MisiPage() {
         <MisiClient
           missions={processedMissions}
           progressMap={progressMap}
+          feedbackMap={feedbackMap}
+          isPro={isPro}
           lockedCount={lockedCount}
           entitlements={{
             isPro,
