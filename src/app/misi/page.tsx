@@ -15,35 +15,42 @@ export default async function MisiPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/api/auth/signin?callbackUrl=/misi');
 
-  const isPro = await hasActivePro(session.user.id);
+  // Jalankan query secara paralel via Promise.all
+  const [isPro, allMissions, progressRows, userFeedbacks] = await Promise.all([
+    hasActivePro(session.user.id),
+    db
+      .select({
+        id: softSkillMissions.id,
+        title: softSkillMissions.title,
+        competency: softSkillMissions.competency,
+        description: softSkillMissions.description,
+        estimatedMinutes: softSkillMissions.estimatedMinutes,
+        difficultyLevel: softSkillMissions.difficultyLevel,
+        difficultyOrder: softSkillMissions.difficultyOrder,
+        isSample: softSkillMissions.isSample,
+      })
+      .from(softSkillMissions)
+      .where(eq(softSkillMissions.isActive, true))
+      .orderBy(
+        asc(softSkillMissions.competency),
+        asc(softSkillMissions.difficultyOrder),
+        asc(softSkillMissions.sortOrder)
+      ),
+    db
+      .select()
+      .from(userMissionProgress)
+      .where(eq(userMissionProgress.userId, session.user.id)),
+    db
+      .select()
+      .from(missionFeedbacks)
+      .where(eq(missionFeedbacks.userId, session.user.id)),
+  ]);
+
   const ent = getEntitlements(isPro);
-
-  // Ambil semua misi aktif, diurutkan per kompetensi & tingkat kesulitan (Mudah -> Sedang -> Menantang)
-  const allMissions = await db
-    .select()
-    .from(softSkillMissions)
-    .where(eq(softSkillMissions.isActive, true))
-    .orderBy(
-      asc(softSkillMissions.competency),
-      asc(softSkillMissions.difficultyOrder),
-      asc(softSkillMissions.sortOrder)
-    );
-
-  // Ambil progress user
-  const progressRows = await db
-    .select()
-    .from(userMissionProgress)
-    .where(eq(userMissionProgress.userId, session.user.id));
 
   const progressMap = Object.fromEntries(
     progressRows.map((p) => [p.missionId, p])
   );
-
-  // Ambil feedback AI user yang sudah tersimpan
-  const userFeedbacks = await db
-    .select()
-    .from(missionFeedbacks)
-    .where(eq(missionFeedbacks.userId, session.user.id));
 
   const feedbackMap = Object.fromEntries(
     userFeedbacks.map((f) => [f.missionId, f.aiFeedback])
