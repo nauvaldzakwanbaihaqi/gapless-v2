@@ -72,117 +72,203 @@ export async function POST(
       );
     }
 
-    const userNotes = parsed.data.submissionText || parsed.data.notes || null;
+    const userNotes = (parsed.data.submissionText || parsed.data.notes || '').trim();
 
-    // Idempotent upsert progress
-    const now = new Date();
-    const existing = await db
-      .select()
-      .from(userMissionProgress)
-      .where(eq(userMissionProgress.userId, session.user.id));
-
-    const missionProgress = existing.find((p) => p.missionId === missionId);
-
-    let result;
-    if (missionProgress) {
-      const updated = await db
-        .update(userMissionProgress)
-        .set({
-          status: 'completed',
-          submissionUrl: parsed.data.submissionUrl || missionProgress.submissionUrl,
-          notes: userNotes || missionProgress.notes,
-          evidenceType: 'self-report',
-          completedAt: missionProgress.completedAt || now,
-          updatedAt: now,
-        })
-        .where(eq(userMissionProgress.id, missionProgress.id))
-        .returning();
-      result = updated[0];
-    } else {
-      const inserted = await db
-        .insert(userMissionProgress)
-        .values({
-          userId: session.user.id,
-          missionId,
-          status: 'completed',
-          submissionUrl: parsed.data.submissionUrl || null,
-          notes: userNotes,
-          evidenceType: 'self-report',
-          completedAt: now,
-          updatedAt: now,
-        })
-        .returning();
-      result = inserted[0];
+    // =========================================================================
+    // LAPIS 1: Validasi Server SEBELUM panggil AI (gratis, tanpa biaya LLM)
+    // =========================================================================
+    if (userNotes.length < 20) {
+      return NextResponse.json(
+        { error: 'Jawaban terlalu singkat. Ceritakan pengalamanmu lebih detail.' },
+        { status: 400 }
+      );
     }
 
-    // Catat ke readiness_events (idempotent, unique index mencegah duplicate boost)
+    // =========================================================================
+    // LAPIS 2: Validasi Relevansi via AI (format JSON terstruktur)
+    // =========================================================================
+    const systemPrompt = `Kamu adalah career coach yang mengevaluasi hasil misi soft skill mahasiswa. Tugasmu ada DUA: pertama, nilai apakah jawaban relevan dengan misi yang diberikan. Kedua, jika relevan, berikan feedback konstruktif.
+
+Respons HARUS dalam format JSON:
+{
+  "is_relevant": true,
+  "rejection_reason": null,
+  "feedback": "feedback lengkap jika relevan, null jika tidak relevan"
+}
+
+Jawaban dianggap TIDAK relevan jika:
+- Berisi karakter acak/spam (asdfasdf, 123, dll)
+- Tidak ada hubungan dengan topik misi
+- Terlalu singkat untuk dinilai (kurang dari 3 kata bermakna)
+- Hanya berisi tanda baca atau simbol
+
+Jika relevan, feedback mencakup:
+- Yang sudah baik (1 poin)
+- Yang perlu diperbaiki (1 poin)
+- Saran konkret (1 poin)
+Bahasa Indonesia, nada profesional tapi ramah. Maks 150 kata.`;
+
+    const userPrompt = `Judul misi: ${currentMission.title}. Kompetensi: ${currentMission.competency}.\nInstruksi misi: ${currentMission.description || '-'}.\nJawaban user: ${userNotes}`;
+
+    let aiRawText = '';
     try {
-      await db.insert(readinessEvents).values({
-        userId: session.user.id,
-        sourceType: 'mission',
-        sourceId: missionId,
-        boostAmount: MISSION_READINESS_BOOST,
-      }).onConflictDoNothing();
-    } catch (evtErr) {
-      console.warn('Readiness event insert notice:', evtErr);
+      let aiRes;
+      try {
+        aiRes = await generateText({
+          model: google('gemini-3.5-flash-lite'),
+          system: systemPrompt,
+          prompt: userPrompt,
+          maxOutputTokens: 500,
+          abortSignal: AbortSignal.timeout(8000),
+        });
+      } catch {
+        aiRes = await generateText({
+          model: google('gemini-3.8-flash'),
+          system: systemPrompt,
+          prompt: userPrompt,
+          maxOutputTokens: 500,
+          abortSignal: AbortSignal.timeout(8000),
+        });
+      }
+      aiRawText = aiRes.text.trim();
+    } catch (aiErr) {
+      console.error('AI validation error/timeout:', aiErr);
+      // AI timeout/error: tidak mengubah status apapun, return 500
+      return NextResponse.json(
+        { error: 'Gagal memvalidasi, coba lagi.' },
+        { status: 500 }
+      );
     }
 
-    // Evaluasi AI Feedback khusus untuk pengguna Pro
-    let aiFeedbackText: string | null = null;
-    if (isPro) {
-      // Cek apakah feedback sudah ada
-      const existingFeedback = await db
-        .select()
-        .from(missionFeedbacks)
-        .where(and(
-          eq(missionFeedbacks.userId, session.user.id),
-          eq(missionFeedbacks.missionId, missionId)
-        ))
-        .limit(1);
+    // Parse JSON respons AI
+    let parsedAi: {
+      is_relevant: boolean;
+      rejection_reason?: string | null;
+      feedback?: string | null;
+    };
 
-      if (existingFeedback.length > 0) {
-        aiFeedbackText = existingFeedback[0].aiFeedback;
-      } else if (userNotes && userNotes.trim().length > 0) {
-        try {
-          const systemPrompt = "Kamu adalah career coach. Berikan feedback singkat (maks 150 kata) atas hasil misi soft skill berikut. Fokus pada: 1 hal yang sudah baik, 1 hal yang perlu diperbaiki, 1 saran konkret. Gunakan bahasa Indonesia, nada profesional tapi ramah.";
-          const userPrompt = `Judul misi: ${currentMission.title}. Kompetensi: ${currentMission.competency}.\nJawaban/hasil user: ${userNotes}`;
+    try {
+      const cleaned = aiRawText.replace(/```json\s*/gi, '').replace(/```/g, '').trim();
+      parsedAi = JSON.parse(cleaned);
+    } catch (parseErr) {
+      console.error('Failed to parse AI JSON:', aiRawText, parseErr);
+      return NextResponse.json(
+        { error: 'Gagal memvalidasi, coba lagi.' },
+        { status: 500 }
+      );
+    }
 
-          let aiRes;
-          try {
-            aiRes = await generateText({
-              model: google('gemini-3.5-flash-lite'),
-              system: systemPrompt,
-              prompt: userPrompt,
-              abortSignal: AbortSignal.timeout(8000),
-            });
-          } catch {
-            aiRes = await generateText({
-              model: google('gemini-3.8-flash'),
-              system: systemPrompt,
-              prompt: userPrompt,
-              abortSignal: AbortSignal.timeout(8000),
+    // Jika is_relevant = false: jangan simpan status, jangan naikkan readiness
+    if (!parsedAi.is_relevant) {
+      const reason = parsedAi.rejection_reason || 'Jawaban tidak relevan dengan topik misi.';
+      return NextResponse.json(
+        { error: `Jawaban belum relevan: ${reason} Coba lagi.` },
+        { status: 400 }
+      );
+    }
+
+    // =========================================================================
+    // TRANSAKSI ATOMIK: Status Selesai + Readiness Boost (+1%)
+    // =========================================================================
+    const now = new Date();
+    let resultProgress;
+
+    try {
+      await db.transaction(async (tx) => {
+        const existing = await tx
+          .select()
+          .from(userMissionProgress)
+          .where(eq(userMissionProgress.userId, session.user.id));
+
+        const missionProgress = existing.find((p) => p.missionId === missionId);
+
+        if (missionProgress) {
+          const updated = await tx
+            .update(userMissionProgress)
+            .set({
+              status: 'completed',
+              submissionUrl: parsed.data.submissionUrl || missionProgress.submissionUrl,
+              submissionText: userNotes,
+              notes: userNotes,
+              evidenceType: 'self-report',
+              completedAt: missionProgress.completedAt || now,
+              updatedAt: now,
+            })
+            .where(eq(userMissionProgress.id, missionProgress.id))
+            .returning();
+          resultProgress = updated[0];
+        } else {
+          const inserted = await tx
+            .insert(userMissionProgress)
+            .values({
+              userId: session.user.id,
+              missionId,
+              status: 'completed',
+              submissionUrl: parsed.data.submissionUrl || null,
+              submissionText: userNotes,
+              notes: userNotes,
+              evidenceType: 'self-report',
+              completedAt: now,
+              updatedAt: now,
+            })
+            .returning();
+          resultProgress = inserted[0];
+        }
+
+        // Catat ke readiness_events (idempotent, unique index mencegah duplicate boost)
+        await tx
+          .insert(readinessEvents)
+          .values({
+            userId: session.user.id,
+            sourceType: 'mission',
+            sourceId: missionId,
+            boostAmount: MISSION_READINESS_BOOST,
+          })
+          .onConflictDoNothing();
+
+        // Simpan feedback AI khusus pengguna Gapless Pro
+        if (isPro && parsedAi.feedback) {
+          const existingFeedback = await tx
+            .select()
+            .from(missionFeedbacks)
+            .where(and(
+              eq(missionFeedbacks.userId, session.user.id),
+              eq(missionFeedbacks.missionId, missionId)
+            ))
+            .limit(1);
+
+          if (existingFeedback.length > 0) {
+            await tx
+              .update(missionFeedbacks)
+              .set({
+                submissionText: userNotes,
+                aiFeedback: parsedAi.feedback,
+                createdAt: now,
+              })
+              .where(eq(missionFeedbacks.id, existingFeedback[0].id));
+          } else {
+            await tx.insert(missionFeedbacks).values({
+              userId: session.user.id,
+              missionId,
+              submissionText: userNotes,
+              aiFeedback: parsedAi.feedback,
+              createdAt: now,
             });
           }
-
-          aiFeedbackText = aiRes.text.trim();
-
-          await db.insert(missionFeedbacks).values({
-            userId: session.user.id,
-            missionId,
-            submissionText: userNotes,
-            aiFeedback: aiFeedbackText,
-          });
-        } catch (aiErr) {
-          console.error('Failed to generate mission AI feedback:', aiErr);
-          aiFeedbackText = 'Refleksi kamu telah tercatat dengan baik! Terus kembangkan kompetensi ini melalui implementasi konsisten di lingkungan kerja.';
         }
-      }
+      });
+    } catch (txErr) {
+      console.error('Atomic transaction error on mission submit:', txErr);
+      return NextResponse.json(
+        { error: 'Gagal menyimpan status misi. Coba lagi.' },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
       success: true,
-      progress: result,
-      feedback: aiFeedbackText,
+      progress: resultProgress,
+      feedback: isPro ? parsedAi.feedback : null,
       isPro,
     });
   } catch (error) {

@@ -8,6 +8,7 @@ import {
   TrendingUp, Star, AlertCircle, Sparkles
 } from 'lucide-react';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
 
 const COMPETENCY_CONFIG: Record<string, {
   label: string;
@@ -115,6 +116,7 @@ export function MisiClient({
   const [submittedId, setSubmittedId] = useState<string | null>(null);
   const [submissionText, setSubmissionText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [lockedMissionModal, setLockedMissionModal] = useState<Mission | null>(null);
   const [feedbacks, setFeedbacks] = useState<Record<string, string>>(feedbackMap);
 
@@ -129,23 +131,33 @@ export function MisiClient({
     const targetMission = missions.find((m) => m.id === missionId);
     if (targetMission?.isLocked) return;
     if (!submissionText.trim()) return;
+
+    if (submissionText.trim().length < 20) {
+      setSubmitError('Jawaban terlalu singkat. Ceritakan pengalamanmu lebih detail (minimal 20 karakter).');
+      return;
+    }
+
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
       const res = await fetch(`/api/missions/${missionId}/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ submissionText }),
       });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.feedback) {
-          setFeedbacks((prev) => ({ ...prev, [missionId]: data.feedback }));
-        }
-        setSubmittedId(missionId);
-        setSubmissionText('');
+      const data = await res.json();
+      if (!res.ok) {
+        setSubmitError(data.error || 'Gagal memproses jawaban. Coba lagi.');
+        return;
       }
+      if (data.feedback) {
+        setFeedbacks((prev) => ({ ...prev, [missionId]: data.feedback }));
+      }
+      setSubmittedId(missionId);
+      setSubmissionText('');
+      setSubmitError(null);
     } catch {
-      // silent
+      setSubmitError('Terjadi kesalahan jaringan. Coba lagi.');
     } finally {
       setIsSubmitting(false);
     }
@@ -360,9 +372,20 @@ export function MisiClient({
                                     <Sparkles className="w-4 h-4 text-indigo-600" />
                                     <span>Evaluasi & Feedback Career Coach AI</span>
                                   </div>
-                                  <p className="text-xs text-slate-700 leading-relaxed whitespace-pre-wrap">
-                                    {feedbacks[mission.id]}
-                                  </p>
+                                  <div className="text-xs text-slate-700 leading-relaxed">
+                                    <ReactMarkdown
+                                      components={{
+                                        p: ({ children }) => <p className="mb-2 leading-relaxed text-slate-700 last:mb-0">{children}</p>,
+                                        strong: ({ children }) => <strong className="font-bold text-slate-900">{children}</strong>,
+                                        em: ({ children }) => <em className="italic text-slate-800">{children}</em>,
+                                        ul: ({ children }) => <ul className="list-disc pl-4 space-y-1 mb-2 text-slate-700">{children}</ul>,
+                                        ol: ({ children }) => <ol className="list-decimal pl-4 space-y-1 mb-2 text-slate-700">{children}</ol>,
+                                        li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+                                      }}
+                                    >
+                                      {feedbacks[mission.id]}
+                                    </ReactMarkdown>
+                                  </div>
                                 </div>
                               ) : isPro ? (
                                 <div className="text-xs text-slate-500 italic bg-slate-50 p-3 rounded-xl border border-slate-100">
@@ -402,14 +425,35 @@ export function MisiClient({
                               </div>
                               <textarea
                                 value={submissionText}
-                                onChange={(e) => setSubmissionText(e.target.value)}
-                                placeholder="Tulis refleksi atau jawaban kamu di sini..."
+                                onChange={(e) => {
+                                  setSubmissionText(e.target.value);
+                                  if (submitError) setSubmitError(null);
+                                }}
+                                placeholder="Tulis refleksi atau jawaban kamu di sini (minimal 20 karakter)..."
                                 rows={4}
                                 className="w-full text-sm border border-slate-200 rounded-xl px-3 py-2.5 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               />
+
+                              <div className="flex items-center justify-between text-[11px] text-slate-400">
+                                <span>Ceritakan pengalaman atau analisismu secara lengkap</span>
+                                <span className={submissionText.trim().length < 20 ? 'text-amber-600 font-medium' : 'text-emerald-600 font-medium'}>
+                                  {submissionText.trim().length}/20 karakter min
+                                </span>
+                              </div>
+
+                              {submitError && (
+                                <div className="bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs text-rose-700 flex items-start gap-2">
+                                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-rose-500" />
+                                  <span className="leading-relaxed">{submitError}</span>
+                                </div>
+                              )}
+
                               <div className="flex gap-2 justify-end">
                                 <button
-                                  onClick={() => setExpandedId(null)}
+                                  onClick={() => {
+                                    setExpandedId(null);
+                                    setSubmitError(null);
+                                  }}
                                   className="text-sm text-slate-500 px-4 py-2 hover:text-slate-700 cursor-pointer"
                                 >
                                   Batal
