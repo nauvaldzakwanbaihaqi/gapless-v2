@@ -151,6 +151,18 @@ export function PassportClient({
     ? TRAIT_META[currentAssessment.dominantTrait as Trait]
     : null;
 
+  // Perhitungan skor dinamis real-time saat sertifikat baru tervalidasi AI
+  const initialCertBoost = initialCertificates
+    .filter((c) => c.status === 'Tervalidasi')
+    .reduce((sum, c) => sum + (c.readinessBoostApplied || 3), 0);
+  const currentCertBoost = certs
+    .filter((c) => c.status === 'Tervalidasi')
+    .reduce((sum, c) => sum + (c.readinessBoostApplied || 3), 0);
+  const certBoostDiff = currentCertBoost - initialCertBoost;
+
+  const currentHardScore = Math.min(95, hardSkillScore + certBoostDiff);
+  const currentSoftScore = Math.min(98, softSkillScore + certBoostDiff);
+
   const careerProfile = findCareerProfile(currentAssessment?.careerSlug || currentAssessment?.careerTitle);
   const availableSkills = careerProfile?.skills.map((s) => s.name) || [
     'Komunikasi', 'Problem Solving', 'Leadership', 'Teknis / Coding', 'Manajemen Proyek'
@@ -406,7 +418,7 @@ export function PassportClient({
               Hard Skill Readiness
             </span>
             <div className="flex items-baseline gap-2 mt-1">
-              <span className="text-3xl font-extrabold text-slate-900">{hardSkillScore}%</span>
+              <span className="text-3xl font-extrabold text-slate-900">{currentHardScore}%</span>
               <span className="text-xs font-medium text-emerald-600 flex items-center">
                 <TrendingUp className="w-3 h-3 mr-0.5" /> Siap Industri
               </span>
@@ -416,7 +428,7 @@ export function PassportClient({
             </p>
           </div>
           <div className="w-16 h-16 rounded-full border-4 border-blue-500 flex items-center justify-center font-bold text-blue-600 bg-blue-50 text-sm">
-            {hardSkillScore}%
+            {currentHardScore}%
           </div>
         </div>
 
@@ -427,7 +439,7 @@ export function PassportClient({
               Soft Skill Readiness
             </span>
             <div className="flex items-baseline gap-2 mt-1">
-              <span className="text-3xl font-extrabold text-slate-900">{softSkillScore}%</span>
+              <span className="text-3xl font-extrabold text-slate-900">{currentSoftScore}%</span>
               <span className="text-xs font-medium text-indigo-600 flex items-center">
                 <UserCheck className="w-3 h-3 mr-0.5" /> 5 Kompetensi
               </span>
@@ -437,7 +449,7 @@ export function PassportClient({
             </p>
           </div>
           <div className="w-16 h-16 rounded-full border-4 border-indigo-500 flex items-center justify-center font-bold text-indigo-600 bg-indigo-50 text-sm">
-            {softSkillScore}%
+            {currentSoftScore}%
           </div>
         </div>
       </div>
@@ -487,8 +499,9 @@ export function PassportClient({
                 <Award className="w-5 h-5" />
               </span>
               <h2 className="text-base font-bold text-slate-900">Sertifikat & Portofolio</h2>
-              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                Kurasi Tim Ahli
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-blue-600" />
+                Verifikasi AI Instan
               </span>
               {certs.filter((c) => c.status === 'Tervalidasi').length > 0 && (
                 <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -497,7 +510,7 @@ export function PassportClient({
               )}
             </div>
             <p className="text-xs text-slate-500">
-              Unggah sertifikat atau portofolio untuk diverifikasi admin dan mendongkrak skor Skill Readiness kamu.
+              Unggah sertifikat atau bukti portofolio untuk diverifikasi instan oleh AI dan langsung mendongkrak skor Skill Readiness kamu.
             </p>
           </div>
 
@@ -746,24 +759,24 @@ export function PassportClient({
                 </button>
               </div>
 
-              {/* Panduan Validasi Portofolio & Akumulasi Skor */}
-              <div className="p-3.5 rounded-xl bg-gradient-to-r from-blue-50/90 to-indigo-50/90 border border-blue-200/80 text-slate-800 space-y-1.5">
+              {/* Panduan Validasi AI Instan & Akumulasi Skor */}
+              <div className="p-3.5 rounded-xl bg-gradient-to-r from-blue-50/90 via-indigo-50/80 to-purple-50/70 border border-blue-200/80 text-slate-800 space-y-1.5">
                 <div className="flex items-center gap-1.5 font-bold text-xs text-blue-950">
                   <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
-                  <span>Panduan Validasi & Akumulasi Skor:</span>
+                  <span>Verifikasi Instan via AI:</span>
                 </div>
                 <div className="text-[11px] leading-relaxed text-slate-600 space-y-1">
                   <div className="flex items-start gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 mt-1.5" />
-                    <span><strong>Kurasi Admin:</strong> Setiap berkas diverifikasi tim ahli untuk memastikan keaslian & relevansi kategori.</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1.5" />
+                    <span><strong>Analisis Otomatis:</strong> Dokumen langsung dianalisis oleh AI dalam hitungan detik tanpa perlu menunggu antrean admin!</span>
                   </div>
                   <div className="flex items-start gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
-                    <span><strong>Dampak ke Skill:</strong> Portofolio tervalidasi akan mendongkrak skill yang diasah dan total Skill Readiness.</span>
+                    <span><strong>Penilaian Bobot Dinamis:</strong> Prestasi juara lomba mendapat boost hingga +5%, volunteer +3%, dan kursus +2%.</span>
                   </div>
                   <div className="flex items-start gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0 mt-1.5" />
-                    <span><strong>Khusus Gapless Pro:</strong> Rincian analisis persentase kenaikan tiap skill dapat dilihat eksklusif oleh akun Pro.</span>
+                    <span><strong>Khusus Gapless Pro:</strong> Analisis mendalam AI dan detail dampak skill per dokumen dapat diakses akun Pro.</span>
                   </div>
                 </div>
               </div>

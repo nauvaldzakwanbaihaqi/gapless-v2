@@ -57,6 +57,10 @@ export async function evaluateCertificateWithAI(
     const systemPrompt = `Kamu adalah AI Verifikator Sertifikat & Portofolio Profesional untuk platform akselerasi karier "Gapless".
 Tugasmu adalah menganalisis dokumen atau portofolio mahasiswa untuk menentukan bobot kenaikan Skill Readiness secara objektif dan adil.
 
+ATURAN PENENTUAN KEABSAHAN (isValidDocument):
+- isValidDocument: true jika berkas atau data adalah sertifikat, piagam penghargaan, surat keterangan kegiatan/organisasi/volunteer, bukti kelulusan kursus, atau portofolio proyek.
+- isValidDocument: false HANYA jika berkas jelas-jelas berupa foto selfie pribadi, meme acak, spam, gambar kosong/rusak, atau sama sekali bukan portofolio/sertifikat.
+
 ATURAN PENENTUAN TIER & BOBOT SKOR (SUGGESTED BOOST):
 - 5%: "Juara 1 / Prestasi Tinggi" -> Juara 1, Juara 2, Juara 3 lomba/kompetisi, Best Speaker, Hackathon winner, atau sertifikasi profesional berlisensi tinggi.
 - 4%: "Finalis / Prestasi Menengah" -> Finalis lomba, Juara Harapan, nominasi karya terbaik, atau portofolio proyek industri skala menengah.

@@ -73,7 +73,22 @@ export async function POST(req: NextRequest) {
       fileMimeType: validation.mimeType,
     });
 
-    // Tulis ke database
+    // Jika AI mendeteksi dokumen palsu/spam/tidak valid
+    if (!aiAnalysis.isValidDocument) {
+      return NextResponse.json(
+        {
+          error:
+            aiAnalysis.aiNotes ||
+            'Berkas yang diunggah tidak teridentifikasi sebagai sertifikat atau bukti portofolio yang valid. Pastikan mengunggah dokumen resmi.',
+        },
+        { status: 400 }
+      );
+    }
+
+    const boostAmount = aiAnalysis.suggestedBoost || 3;
+    const now = new Date();
+
+    // Tulis ke database langsung berstatus Tervalidasi (Full Autonomous AI Verification)
     const inserted = await db
       .insert(certificates)
       .values({
@@ -88,14 +103,33 @@ export async function POST(req: NextRequest) {
         fileStorageKey: storageKey,
         fileMimeType: validation.mimeType,
         fileSize: size,
-        status: 'Menunggu Review',
-        readinessBoostApplied: 0,
+        status: 'Tervalidasi',
+        adminNote: aiAnalysis.aiNotes,
+        readinessBoostApplied: boostAmount,
         aiAnalysis,
-        aiSuggestedBoost: aiAnalysis.suggestedBoost,
+        aiSuggestedBoost: boostAmount,
+        reviewedBy: session.user.id,
+        reviewedAt: now,
         source,
         activityId,
       })
       .returning();
+
+    // Idempotent logging ke readiness_events (+boostAmount%)
+    const { readinessEvents } = await import('@/db/schema');
+    try {
+      await db
+        .insert(readinessEvents)
+        .values({
+          userId: session.user.id,
+          sourceType: 'certificate',
+          sourceId: certId,
+          boostAmount,
+        })
+        .onConflictDoNothing();
+    } catch (evtErr) {
+      console.warn('Readiness event insert notice:', evtErr);
+    }
 
     // Sinkronisasi otomatis ke kegiatan jika sumbernya dari kegiatan
     if (source === 'kegiatan' && activityId) {
@@ -116,7 +150,8 @@ export async function POST(req: NextRequest) {
             .update(activityEvidence)
             .set({
               evidenceUrl: `/api/certificates/${certId}/file`,
-              status: 'pending',
+              status: 'confirmed',
+              confirmedAt: now,
             })
             .where(eq(activityEvidence.id, existingEvidence[0].id));
         } else {
@@ -124,7 +159,8 @@ export async function POST(req: NextRequest) {
             userId: session.user.id,
             activityId,
             evidenceUrl: `/api/certificates/${certId}/file`,
-            status: 'pending',
+            status: 'confirmed',
+            confirmedAt: now,
           });
         }
       } catch (err) {
@@ -135,7 +171,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       certificate: inserted[0],
-      message: 'Sertifikat berhasil diunggah dan sedang menunggu review admin.',
+      boostAmount,
+      message: `Portofolio berhasil divalidasi instan oleh AI! Skor Skill Readiness bertambah +${boostAmount}%.`,
     });
   } catch (error) {
     console.error('Error uploading certificate:', error);
