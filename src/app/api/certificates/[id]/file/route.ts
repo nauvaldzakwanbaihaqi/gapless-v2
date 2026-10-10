@@ -46,7 +46,7 @@ export async function GET(
       return NextResponse.json({ error: 'Forbidden: Kamu tidak memiliki akses ke dokumen ini' }, { status: 403 });
     }
 
-    const fileBuffer = await readCertificateFile(cert.fileStorageKey);
+    const fileBuffer = await readCertificateFile(cert.fileStorageKey, cert.fileData);
     if (!fileBuffer) {
       return NextResponse.json({ error: 'File tidak ditemukan di penyimpanan server' }, { status: 404 });
     }

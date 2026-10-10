@@ -132,7 +132,7 @@ export default async function PassportPage() {
           softSkillScore={softScore}
           completedMissions={completedMissions}
           userActivities={userActivities}
-          certificates={userCertificates}
+          certificates={userCertificates.map(({ fileData: _fileData, ...rest }) => rest)}
           snapshots={snapshots}
           publicProfile={publicProfile[0] || null}
           isPro={ent.isPro}

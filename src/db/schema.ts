@@ -559,6 +559,7 @@ export const certificates = pgTable("certificates", {
   sumber: text("sumber").default("Kegiatan di Gapless").notNull(), // "Kegiatan di Gapless" | "Kursus Eksternal" | "Organisasi" | "Lomba" | "Lainnya"
   catatanTambahan: text("catatan_tambahan"),
   fileStorageKey: text("file_storage_key").notNull(),
+  fileData: text("file_data"),
   fileMimeType: text("file_mime_type").notNull(),
   fileSize: integer("file_size").notNull(),
   status: text("status").default("Menunggu Review").notNull(), // "Menunggu Review" | "Tervalidasi" | "Ditolak"

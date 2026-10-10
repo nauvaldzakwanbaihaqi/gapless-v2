@@ -56,7 +56,7 @@ export async function validateCertificateFile(file: File): Promise<FileValidatio
 }
 
 /**
- * Simpan file sertifikat ke direktori storage privat yang aman
+ * Simpan file sertifikat secara aman (kompatibel Serverless Vercel & Lokal)
  */
 export async function saveCertificateFile(
   userId: string,
@@ -64,38 +64,64 @@ export async function saveCertificateFile(
   file: File,
   ext: string,
   mimeType: string
-): Promise<{ storageKey: string; size: number }> {
+): Promise<{ storageKey: string; size: number; base64Data: string }> {
   // Direktori terisolasi per user
   const sanitizedUserId = userId.replace(/[^a-zA-Z0-9-_]/g, '');
   const sanitizedCertId = certId.replace(/[^a-zA-Z0-9-_]/g, '');
   const relativeKey = `${sanitizedUserId}/${sanitizedCertId}.${ext}`;
 
-  const baseStorageDir = path.join(process.cwd(), 'storage', 'certificates', sanitizedUserId);
-  if (!fs.existsSync(baseStorageDir)) {
-    fs.mkdirSync(baseStorageDir, { recursive: true });
-  }
-
-  const fullPath = path.join(baseStorageDir, `${sanitizedCertId}.${ext}`);
   const arrayBuffer = await file.arrayBuffer();
-  fs.writeFileSync(fullPath, Buffer.from(arrayBuffer));
+  const buffer = Buffer.from(arrayBuffer);
+  const base64Data = buffer.toString('base64');
+
+  // Coba simpan ke local disk hanya di development lokal
+  try {
+    if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+      const storageRoot = path.join(process.cwd(), 'storage', 'certificates');
+      const userDir = path.join(storageRoot, sanitizedUserId);
+      if (!fs.existsSync(userDir)) {
+        fs.mkdirSync(userDir, { recursive: true });
+      }
+      const fullPath = path.join(userDir, `${sanitizedCertId}.${ext}`);
+      fs.writeFileSync(fullPath, buffer);
+    }
+  } catch (fsErr) {
+    console.warn('Local filesystem write skipped:', fsErr);
+  }
 
   return {
     storageKey: relativeKey,
     size: file.size,
+    base64Data,
   };
 }
 
 /**
- * Baca file dari storage untuk streaming privat
+ * Baca file dari storage untuk streaming privat (dengan prioritas base64 database)
  */
-export async function readCertificateFile(storageKey: string): Promise<Buffer | null> {
-  // Cegah path traversal
-  const normalizedKey = path.normalize(storageKey).replace(/^(\.\.[\/\\])+/, '');
-  const fullPath = path.join(process.cwd(), 'storage', 'certificates', normalizedKey);
-
-  if (!fs.existsSync(fullPath)) {
-    return null;
+export async function readCertificateFile(
+  storageKey: string,
+  base64Fallback?: string | null
+): Promise<Buffer | null> {
+  // 1. Prioritas utama: jika ada data base64 dari database (kompatibel 100% di serverless Vercel)
+  if (base64Fallback) {
+    try {
+      return Buffer.from(base64Fallback, 'base64');
+    } catch {
+      // fallback ke disk jika decode gagal
+    }
   }
 
-  return fs.readFileSync(fullPath);
+  // 2. Coba baca dari filesystem lokal jika ada (misal di local dev)
+  try {
+    const normalizedKey = path.normalize(storageKey).replace(/^(\.\.[\/\\])+/, '');
+    const localPath = path.join(process.cwd(), 'storage', 'certificates', normalizedKey);
+    if (fs.existsSync(localPath)) {
+      return fs.readFileSync(localPath);
+    }
+  } catch (err) {
+    console.warn('File read from disk warning:', err);
+  }
+
+  return null;
 }

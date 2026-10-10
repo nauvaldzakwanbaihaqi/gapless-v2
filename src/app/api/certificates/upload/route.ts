@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     const certId = crypto.randomUUID();
 
     // Simpan file ke storage privat yang aman
-    const { storageKey, size } = await saveCertificateFile(
+    const { storageKey, size, base64Data } = await saveCertificateFile(
       session.user.id,
       certId,
       file,
@@ -101,6 +101,7 @@ export async function POST(req: NextRequest) {
         sumber,
         catatanTambahan,
         fileStorageKey: storageKey,
+        fileData: base64Data,
         fileMimeType: validation.mimeType,
         fileSize: size,
         status: 'Tervalidasi',
@@ -168,9 +169,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const { fileData: _fileData, ...certResponse } = inserted[0];
     return NextResponse.json({
       success: true,
-      certificate: inserted[0],
+      certificate: certResponse,
       boostAmount,
       message: `Portofolio berhasil divalidasi instan oleh AI! Skor Skill Readiness bertambah +${boostAmount}%.`,
     });
