@@ -107,10 +107,12 @@ export default async function PassportPage() {
   const baseHard = formattedAssessments.length ? 70 : 50;
   const completedMissionsCount = completedMissions.filter(m => m.progress.status === 'completed').length;
   const confirmedActivitiesCount = userActivities.filter(a => a.evidence.status === 'confirmed').length;
-  const validatedCertCount = userCertificates.filter(c => c.status === 'Tervalidasi').length;
+  const totalCertBoost = userCertificates
+    .filter((c) => c.status === 'Tervalidasi')
+    .reduce((sum, c) => sum + (c.readinessBoostApplied || 3), 0);
 
-  const softScore = Math.min(98, 60 + completedMissionsCount * 1 + confirmedActivitiesCount * 2 + validatedCertCount * 3);
-  const hardScore = Math.min(95, baseHard + completedMissionsCount * 1 + validatedCertCount * 3);
+  const softScore = Math.min(98, 60 + completedMissionsCount * 1 + confirmedActivitiesCount * 2 + totalCertBoost);
+  const hardScore = Math.min(95, baseHard + completedMissionsCount * 1 + totalCertBoost);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 flex flex-col">

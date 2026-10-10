@@ -9,6 +9,7 @@ import { z } from 'zod';
 const reviewSchema = z.object({
   action: z.enum(['approve', 'reject']),
   adminNote: z.string().max(1000).optional(),
+  boostAmount: z.number().int().min(1).max(10).optional(),
 }).refine((data) => {
   if (data.action === 'reject') {
     return !!data.adminNote && data.adminNote.trim().length > 0;
@@ -65,7 +66,8 @@ export async function POST(
 
     if (action === 'approve') {
       const isAlreadyApproved = cert.status === 'Tervalidasi' && cert.readinessBoostApplied > 0;
-      const boostAmount = isAlreadyApproved ? cert.readinessBoostApplied : CERT_READINESS_BOOST;
+      const chosenBoost = parsed.data.boostAmount || cert.aiSuggestedBoost || cert.readinessBoostApplied || CERT_READINESS_BOOST;
+      const boostAmount = isAlreadyApproved ? cert.readinessBoostApplied : chosenBoost;
 
       // Update certificate
       const updated = await db
@@ -89,7 +91,7 @@ export async function POST(
             userId: cert.userId,
             sourceType: 'certificate',
             sourceId: cert.id,
-            boostAmount: CERT_READINESS_BOOST,
+            boostAmount: boostAmount,
           }).onConflictDoNothing();
         } catch (evtErr) {
           console.warn('Readiness event insert notice:', evtErr);

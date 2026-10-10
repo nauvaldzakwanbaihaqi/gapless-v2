@@ -564,6 +564,8 @@ export const certificates = pgTable("certificates", {
   status: text("status").default("Menunggu Review").notNull(), // "Menunggu Review" | "Tervalidasi" | "Ditolak"
   adminNote: text("admin_note"),
   readinessBoostApplied: integer("readiness_boost_applied").default(0).notNull(),
+  aiAnalysis: jsonb("ai_analysis"),
+  aiSuggestedBoost: integer("ai_suggested_boost").default(3),
   reviewedBy: text("reviewed_by").references(() => users.id),
   reviewedAt: timestamp("reviewed_at", { mode: "date" }),
   source: text("source").default("passport").notNull(), // legacy tag

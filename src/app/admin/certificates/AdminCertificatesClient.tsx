@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ShieldCheck, CheckCircle2, XCircle, Clock, FileText, ExternalLink, AlertCircle } from 'lucide-react';
+import { ShieldCheck, CheckCircle2, XCircle, Clock, FileText, ExternalLink, AlertCircle, Sparkles } from 'lucide-react';
 
 interface CertificateItem {
   id: string;
@@ -19,6 +19,8 @@ interface CertificateItem {
   status: string;
   adminNote: string | null;
   readinessBoostApplied: number;
+  aiAnalysis?: any;
+  aiSuggestedBoost?: number | null;
   source: string;
   createdAt: Date;
   reviewedAt: Date | null;
@@ -36,19 +38,19 @@ export function AdminCertificatesClient({ initialCertificates }: { initialCertif
     return c.status === filter;
   });
 
-  const handleApprove = async (id: string) => {
-    if (!confirm('Validasi sertifikat ini dan berikan boost +3% Skill Readiness?')) return;
+  const handleApprove = async (id: string, boostAmount: number = 3) => {
+    if (!confirm(`Validasi sertifikat ini dan berikan boost +${boostAmount}% Skill Readiness?`)) return;
     setProcessingId(id);
     try {
       const res = await fetch(`/api/admin/certificates/${id}/review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'approve' }),
+        body: JSON.stringify({ action: 'approve', boostAmount }),
       });
       const data = await res.json();
       if (res.ok && data.certificate) {
         setCerts((prev) =>
-          prev.map((item) => (item.id === id ? { ...item, status: 'Tervalidasi', readinessBoostApplied: 3 } : item))
+          prev.map((item) => (item.id === id ? { ...item, status: 'Tervalidasi', readinessBoostApplied: boostAmount } : item))
         );
       } else {
         alert(data.error || 'Gagal memvalidasi sertifikat');
@@ -197,6 +199,27 @@ export function AdminCertificatesClient({ initialCertificates }: { initialCertif
                     </p>
                   )}
 
+                  {cert.aiAnalysis && (
+                    <div className="mt-2.5 p-3 rounded-xl bg-gradient-to-r from-blue-50/70 via-indigo-50/50 to-purple-50/40 border border-blue-200/80 text-xs space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 font-bold text-blue-950 text-xs">
+                          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                          <span>Rekomendasi AI ({cert.aiAnalysis.achievementLevel}):</span>
+                        </div>
+                        <span className="font-extrabold text-[11px] px-2.5 py-0.5 rounded-full bg-blue-600 text-white shadow-xs">
+                          Saran Boost: +{cert.aiAnalysis.suggestedBoost || cert.aiSuggestedBoost || 3}%
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-700 leading-relaxed">
+                        {cert.aiAnalysis.aiNotes}
+                      </p>
+                      <div className="text-[10px] text-slate-500 flex items-center gap-3 pt-0.5">
+                        <span>Relevansi Skill: <strong className="text-indigo-700">#{cert.aiAnalysis.relevantSkill}</strong></span>
+                        <span>Keyakinan: <strong>{cert.aiAnalysis.confidenceScore}%</strong></span>
+                      </div>
+                    </div>
+                  )}
+
                   {cert.adminNote && (
                     <p className="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100 mt-2">
                       Catatan Admin: <em>{cert.adminNote}</em>
@@ -217,14 +240,14 @@ export function AdminCertificatesClient({ initialCertificates }: { initialCertif
                   </a>
 
                   {isPending && (
-                    <>
+                    <div className="flex items-center gap-1.5">
                       <button
-                        onClick={() => handleApprove(cert.id)}
+                        onClick={() => handleApprove(cert.id, cert.aiSuggestedBoost || 3)}
                         disabled={processingId === cert.id}
-                        className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition disabled:opacity-50 flex items-center gap-1"
+                        className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition disabled:opacity-50 flex items-center gap-1 cursor-pointer shadow-xs"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
-                        Validasi (+3%)
+                        Validasi (+{cert.aiSuggestedBoost || 3}%)
                       </button>
 
                       <button
@@ -233,11 +256,11 @@ export function AdminCertificatesClient({ initialCertificates }: { initialCertif
                           setRejectReason('');
                         }}
                         disabled={processingId === cert.id}
-                        className="px-3 py-2 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 text-xs font-semibold transition disabled:opacity-50"
+                        className="px-3 py-2 rounded-xl bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 text-xs font-semibold transition disabled:opacity-50 cursor-pointer"
                       >
                         Tolak
                       </button>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>

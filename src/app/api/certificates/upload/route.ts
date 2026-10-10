@@ -51,6 +51,28 @@ export async function POST(req: NextRequest) {
       validation.mimeType
     );
 
+    // Ambil buffer untuk evaluasi AI
+    let fileBuffer: Buffer | undefined;
+    try {
+      const arr = await file.arrayBuffer();
+      fileBuffer = Buffer.from(arr);
+    } catch {
+      fileBuffer = undefined;
+    }
+
+    // Evaluasi AI untuk mendeteksi pencapaian (misal Juara 1 = 5%, Volunteer = 3%)
+    const { evaluateCertificateWithAI } = await import('@/lib/certificate_evaluator');
+    const aiAnalysis = await evaluateCertificateWithAI({
+      judul,
+      penyelenggara,
+      tanggalTerbit,
+      sumber,
+      kategoriSkill,
+      catatanTambahan,
+      fileBuffer,
+      fileMimeType: validation.mimeType,
+    });
+
     // Tulis ke database
     const inserted = await db
       .insert(certificates)
@@ -68,6 +90,8 @@ export async function POST(req: NextRequest) {
         fileSize: size,
         status: 'Menunggu Review',
         readinessBoostApplied: 0,
+        aiAnalysis,
+        aiSuggestedBoost: aiAnalysis.suggestedBoost,
         source,
         activityId,
       })

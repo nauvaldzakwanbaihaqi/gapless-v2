@@ -81,6 +81,8 @@ export interface CertificateData {
   status: string;
   adminNote: string | null;
   readinessBoostApplied: number;
+  aiAnalysis?: any;
+  aiSuggestedBoost?: number | null;
   source: string;
   createdAt: string | Date;
 }
@@ -586,6 +588,18 @@ export function PassportClient({
                         <span className="text-blue-600 font-medium">#{cert.kategoriSkill}</span>
                       )}
                     </div>
+
+                    {isPro && cert.aiAnalysis && (
+                      <div className="text-[11px] text-blue-900 bg-blue-50/70 p-2.5 rounded-xl border border-blue-100 mt-2 space-y-1">
+                        <div className="flex items-center gap-1 font-semibold text-blue-950">
+                          <Sparkles className="w-3 h-3 text-blue-600" />
+                          <span>Analisis AI ({cert.aiAnalysis.achievementLevel}):</span>
+                        </div>
+                        <p className="text-[11px] text-slate-600 leading-relaxed">
+                          {cert.aiAnalysis.aiNotes}
+                        </p>
+                      </div>
+                    )}
 
                     {cert.adminNote && (
                       <p className="text-[11px] text-slate-600 bg-slate-100 p-2 rounded-lg border border-slate-200/80 mt-1.5">
