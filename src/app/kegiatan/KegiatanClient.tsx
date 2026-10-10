@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import {
   Calendar, Award, Bookmark, ExternalLink, Filter,
   CheckCircle2, Clock, Sparkles, Lock, ArrowUpRight,
-  Search, Users, Trophy, HeartHandshake, FileCheck, X
+  Search, Users, Trophy, HeartHandshake, FileCheck, X, Upload
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -52,8 +52,12 @@ export function KegiatanClient({
   const [searchQuery, setSearchQuery] = useState('');
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set(initialSavedIds));
   const [evidenceMap, setEvidenceMap] = useState<Record<string, EvidenceItem>>(initialEvidenceMap);
-  const [submittingId, setSubmittingId] = useState<string | null>(null);
-  const [evidenceUrl, setEvidenceUrl] = useState('');
+  const [submittingAct, setSubmittingAct] = useState<ActivityItem | null>(null);
+  const [certFile, setCertFile] = useState<File | null>(null);
+  const [certTitle, setCertTitle] = useState('');
+  const [certOrganizer, setCertOrganizer] = useState('');
+  const [certDate, setCertDate] = useState('');
+  const [certCategory, setCertCategory] = useState('');
   const [isSubmittingProof, setIsSubmittingProof] = useState(false);
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
@@ -83,41 +87,70 @@ export function KegiatanClient({
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
-  const handleOpenEvidenceModal = (activityId: string) => {
-    setSubmittingId(activityId);
-    setEvidenceUrl(evidenceMap[activityId]?.evidenceUrl || '');
+  const handleOpenEvidenceModal = (act: ActivityItem) => {
+    setSubmittingAct(act);
+    setCertTitle(act.title);
+    setCertOrganizer('');
+    setCertDate(new Date().toISOString().split('T')[0]);
+    setCertCategory(act.skillTags?.[0] || act.competencyTags?.[0] || 'Kegiatan');
+    setCertFile(null);
     setFeedbackMsg(null);
   };
 
   const handleSubmitEvidence = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!submittingId || !evidenceUrl.trim()) return;
+    if (!submittingAct) return;
+
+    if (!certFile) {
+      setFeedbackMsg('Pilih file sertifikat atau bukti (JPG, PNG, PDF maks 5MB) terlebih dahulu.');
+      return;
+    }
+
+    if (!certTitle.trim() || !certOrganizer.trim() || !certDate) {
+      setFeedbackMsg('Nama kegiatan, penyelenggara, dan tanggal selesai wajib diisi.');
+      return;
+    }
 
     setIsSubmittingProof(true);
     setFeedbackMsg(null);
 
     try {
-      const res = await fetch(`/api/activities/${submittingId}/submit-proof`, {
+      const formData = new FormData();
+      formData.append('judul', certTitle.trim());
+      formData.append('penyelenggara', certOrganizer.trim());
+      formData.append('tanggalTerbit', certDate);
+      if (certCategory) formData.append('kategoriSkill', certCategory.trim());
+      formData.append('source', 'kegiatan');
+      formData.append('activityId', submittingAct.id);
+      formData.append('file', certFile);
+
+      const res = await fetch('/api/certificates/upload', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ evidenceUrl }),
+        body: formData,
       });
 
       const data = await res.json();
-      if (res.ok && data.evidence) {
+      if (res.ok && data.success) {
         setEvidenceMap((prev) => ({
           ...prev,
-          [submittingId]: data.evidence,
+          [submittingAct.id]: {
+            id: data.certificate.id,
+            activityId: submittingAct.id,
+            evidenceUrl: `/api/certificates/${data.certificate.id}/file`,
+            status: 'pending',
+            confirmedAt: null,
+            isSampleConfirmation: null,
+          },
         }));
-        setFeedbackMsg('Bukti berhasil dikirim! Status telah dicatat di Skill Passport.');
+        setFeedbackMsg('Sertifikat berhasil diunggah! Bukti masuk ke antrean verifikasi dan otomatis tersimpan di Passport.');
         setTimeout(() => {
-          setSubmittingId(null);
-        }, 1200);
+          setSubmittingAct(null);
+        }, 1500);
       } else {
-        setFeedbackMsg(data.error || 'Gagal mengirim bukti.');
+        setFeedbackMsg(data.error || 'Gagal mengunggah sertifikat.');
       }
     } catch (err) {
-      setFeedbackMsg('Terjadi kesalahan jaringan.');
+      setFeedbackMsg('Terjadi kesalahan jaringan saat mengunggah.');
     } finally {
       setIsSubmittingProof(false);
     }
@@ -333,7 +366,7 @@ export function KegiatanClient({
 
                 <div className="flex items-center gap-2">
                   <button
-                    onClick={() => handleOpenEvidenceModal(act.id)}
+                    onClick={() => handleOpenEvidenceModal(act)}
                     className="px-2.5 py-1.5 rounded-lg text-slate-600 hover:bg-slate-100 border border-slate-200 text-xs font-medium flex items-center gap-1 transition"
                   >
                     <FileCheck className="w-3.5 h-3.5" />
@@ -392,49 +425,113 @@ export function KegiatanClient({
 
       {/* Modal Submit Evidence */}
       <AnimatePresence>
-        {submittingId && (
+        {submittingAct && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-100"
+              className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <span className="p-2 rounded-xl bg-blue-50 text-blue-600">
                     <FileCheck className="w-5 h-5" />
                   </span>
-                  <h3 className="font-bold text-slate-900 text-base">Kirim Bukti Kegiatan</h3>
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-base">Unggah Bukti Sertifikat</h3>
+                    <p className="text-[11px] text-slate-500">Tercatat di Skill Passport & diverifikasi admin</p>
+                  </div>
                 </div>
                 <button
-                  onClick={() => setSubmittingId(null)}
+                  onClick={() => setSubmittingAct(null)}
                   className="p-1 rounded-lg hover:bg-slate-100 text-slate-400"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmitEvidence} className="space-y-4">
+              <form onSubmit={handleSubmitEvidence} className="space-y-3.5">
+                {/* File Upload Box */}
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Tautan Bukti Keikutsertaan / Sertifikat
+                    File Sertifikat / Bukti (JPG, PNG, PDF maks 5MB) <span className="text-rose-500">*</span>
                   </label>
                   <input
-                    type="url"
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.pdf"
                     required
-                    placeholder="https://drive.google.com/... atau https://linkedin.com/..."
-                    value={evidenceUrl}
-                    onChange={(e) => setEvidenceUrl(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800"
+                    onChange={(e) => setCertFile(e.target.files?.[0] || null)}
+                    className="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer border border-slate-200 rounded-xl p-1.5"
                   />
-                  <p className="text-[11px] text-slate-500 mt-1">
-                    Tautan akan diverifikasi dan dicatat ke Skill Passport kamu sebagai bukti terkonfirmasi.
-                  </p>
+                  {certFile && (
+                    <p className="text-[11px] text-blue-600 font-medium mt-1">
+                      Terpilih: {certFile.name} ({(certFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Nama Kegiatan / Sertifikat <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={certTitle}
+                    onChange={(e) => setCertTitle(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800"
+                    placeholder="Contoh: Hackathon Web Dev 2026"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Penyelenggara <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={certOrganizer}
+                    onChange={(e) => setCertOrganizer(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800"
+                    placeholder="Contoh: GDG / Kemendikbud / Dicoding"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Tanggal Selesai <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      value={certDate}
+                      onChange={(e) => setCertDate(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      Topik / Skill
+                    </label>
+                    <input
+                      type="text"
+                      value={certCategory}
+                      onChange={(e) => setCertCategory(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800"
+                      placeholder="Contoh: Frontend"
+                    />
+                  </div>
                 </div>
 
                 {feedbackMsg && (
-                  <p className="text-xs font-medium text-indigo-600 bg-indigo-50 p-2.5 rounded-lg border border-indigo-100">
+                  <p className={`text-xs font-medium p-2.5 rounded-lg border ${
+                    feedbackMsg.includes('berhasil')
+                      ? 'text-emerald-700 bg-emerald-50 border-emerald-100'
+                      : 'text-rose-600 bg-rose-50 border-rose-100'
+                  }`}>
                     {feedbackMsg}
                   </p>
                 )}
@@ -442,7 +539,7 @@ export function KegiatanClient({
                 <div className="flex items-center justify-end gap-2 pt-2">
                   <button
                     type="button"
-                    onClick={() => setSubmittingId(null)}
+                    onClick={() => setSubmittingAct(null)}
                     className="px-4 py-2 rounded-xl text-slate-600 hover:bg-slate-100 text-xs font-medium"
                   >
                     Batal
@@ -450,9 +547,16 @@ export function KegiatanClient({
                   <button
                     type="submit"
                     disabled={isSubmittingProof}
-                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition disabled:opacity-50"
+                    className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition disabled:opacity-50 flex items-center gap-1.5"
                   >
-                    {isSubmittingProof ? 'Menyimpan...' : 'Simpan & Kirim'}
+                    {isSubmittingProof ? (
+                      'Mengunggah...'
+                    ) : (
+                      <>
+                        <Upload className="w-3.5 h-3.5" />
+                        Unggah Bukti
+                      </>
+                    )}
                   </button>
                 </div>
               </form>

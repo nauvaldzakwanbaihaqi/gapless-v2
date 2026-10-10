@@ -14,6 +14,7 @@ import {
   readinessSnapshots,
   publicProfiles,
   assessmentResults,
+  certificates,
 } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { PassportClient } from './PassportClient';
@@ -94,14 +95,22 @@ export default async function PassportPage() {
     .where(eq(publicProfiles.userId, session.user.id))
     .limit(1);
 
+  // Ambil Sertifikat & Portofolio user
+  const userCertificates = await db
+    .select()
+    .from(certificates)
+    .where(eq(certificates.userId, session.user.id))
+    .orderBy(desc(certificates.createdAt));
+
   // Hitung Skor Sederhana Deterministik
   // Hard skill baseline dari assessment atau 65% + bonus per milestone
   const baseHard = formattedAssessments.length ? 70 : 50;
   const completedMissionsCount = completedMissions.filter(m => m.progress.status === 'completed').length;
   const confirmedActivitiesCount = userActivities.filter(a => a.evidence.status === 'confirmed').length;
+  const validatedCertCount = userCertificates.filter(c => c.status === 'Tervalidasi').length;
 
-  const softScore = Math.min(95, 60 + completedMissionsCount * 4 + confirmedActivitiesCount * 7);
-  const hardScore = Math.min(92, baseHard + completedMissionsCount * 2);
+  const softScore = Math.min(98, 60 + completedMissionsCount * 1 + confirmedActivitiesCount * 2 + validatedCertCount * 3);
+  const hardScore = Math.min(95, baseHard + completedMissionsCount * 1 + validatedCertCount * 3);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 flex flex-col">
@@ -121,6 +130,7 @@ export default async function PassportPage() {
           softSkillScore={softScore}
           completedMissions={completedMissions}
           userActivities={userActivities}
+          certificates={userCertificates}
           snapshots={snapshots}
           publicProfile={publicProfile[0] || null}
           isPro={ent.isPro}
