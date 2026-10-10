@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Printer, Download, ShieldCheck, Sparkles, CheckCircle2, Clock, BookOpen, AlertTriangle, FileText } from 'lucide-react';
 import { ComprehensiveReportData } from '@/lib/report_generator';
 import { ReportSvgRadar } from '@/components/ReportSvgRadar';
+import { downloadBlobFile } from '@/lib/download-helper';
 
 interface Props {
   report: ComprehensiveReportData;
@@ -29,14 +30,8 @@ export function ReportDocumentClient({ report, assessmentId }: Props) {
       const res = await fetch(`/api/report/${assessmentId}/pdf`);
       if (!res.ok) throw new Error('Gagal mengunduh file PDF');
       const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Gapless-Laporan-${(report.targetRole || 'Executive').replace(/[^a-zA-Z0-9_-]/g, '_')}-${report.reportNumber}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      const filename = `Gapless-Laporan-${(report.targetRole || 'Executive').replace(/[^a-zA-Z0-9_-]/g, '_')}-${report.reportNumber}.pdf`;
+      downloadBlobFile(blob, filename);
     } catch (err) {
       console.error(err);
       window.print();

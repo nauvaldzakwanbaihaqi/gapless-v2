@@ -6,6 +6,7 @@ import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadius
 import { Sparkles, CheckCircle2, AlertTriangle, Lock, FileDown, Check, ShieldCheck, ArrowRight, X, Printer, FileText, Download, Loader2, ExternalLink } from 'lucide-react';
 import { GapInsight } from '@/contexts/CareerContext';
 import Link from 'next/link';
+import { downloadBlobFile } from '@/lib/download-helper';
 
 interface FreeSummary {
   matchingSkills: string[];
@@ -100,14 +101,8 @@ export function AnalysisResultBlock({
         throw new Error('Gagal mengunduh file PDF');
       }
       const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Gapless-Laporan-${(careerName || 'Karier').replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
+      const filename = `Gapless-Laporan-${(careerName || 'Karier').replace(/[^a-zA-Z0-9_-]/g, '_')}.pdf`;
+      downloadBlobFile(blob, filename);
     } catch (err) {
       console.error(err);
       // Fallback: buka dokumen langsung di tab baru

@@ -6,7 +6,6 @@ import { ChevronRight, Layers, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useGaplessContext } from '@/contexts/CareerContext';
 import { quizBank } from '@/data/quizBank';
-import { AnalysisResultBlock } from './AnalysisResultBlock';
 import { TRAIT_META } from '@/data/gaplessData';
 
 // Simple slugify to match DB roleName to quizBank keys (e.g. 'Software Engineer' -> 'software-engineer')
