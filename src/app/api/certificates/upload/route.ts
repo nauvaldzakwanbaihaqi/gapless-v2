@@ -17,6 +17,8 @@ export async function POST(req: NextRequest) {
     const penyelenggara = formData.get('penyelenggara')?.toString().trim();
     const tanggalTerbit = formData.get('tanggalTerbit')?.toString().trim();
     const kategoriSkill = formData.get('kategoriSkill')?.toString().trim();
+    const sumber = formData.get('sumber')?.toString().trim() || 'Kegiatan di Gapless';
+    const catatanTambahan = formData.get('catatanTambahan')?.toString().trim() || null;
     const source = (formData.get('source')?.toString().trim() || 'passport') as 'passport' | 'kegiatan';
     const activityId = formData.get('activityId')?.toString().trim() || null;
     const file = formData.get('file') as File | null;
@@ -59,6 +61,8 @@ export async function POST(req: NextRequest) {
         penyelenggara,
         tanggalTerbit,
         kategoriSkill: kategoriSkill || null,
+        sumber,
+        catatanTambahan,
         fileStorageKey: storageKey,
         fileMimeType: validation.mimeType,
         fileSize: size,

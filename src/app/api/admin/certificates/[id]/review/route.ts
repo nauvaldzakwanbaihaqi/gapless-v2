@@ -9,6 +9,14 @@ import { z } from 'zod';
 const reviewSchema = z.object({
   action: z.enum(['approve', 'reject']),
   adminNote: z.string().max(1000).optional(),
+}).refine((data) => {
+  if (data.action === 'reject') {
+    return !!data.adminNote && data.adminNote.trim().length > 0;
+  }
+  return true;
+}, {
+  message: 'Catatan alasan penolakan wajib diisi',
+  path: ['adminNote'],
 });
 
 export async function POST(
@@ -21,12 +29,12 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Guard: hanya role ADMIN atau email admin
+    // Guard: hanya role ADMIN, isAdmin, atau email admin
     const currentUser = await db.query.users.findFirst({
       where: eq(users.id, session.user.id),
     });
 
-    const isAdmin = currentUser?.role === 'ADMIN' || session.user.email === 'nauvaldzakwanbaihaqi@gmail.com';
+    const isAdmin = currentUser?.isAdmin || currentUser?.role === 'ADMIN' || session.user.email === 'nauvaldzakwanbaihaqi@gmail.com';
     if (!isAdmin) {
       return NextResponse.json({ error: 'Forbidden: Hanya admin yang dapat mereview sertifikat' }, { status: 403 });
     }
@@ -36,7 +44,7 @@ export async function POST(
     const parsed = reviewSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Data review tidak valid', details: parsed.error.issues }, { status: 400 });
+      return NextResponse.json({ error: parsed.error.issues[0]?.message || 'Data review tidak valid', details: parsed.error.issues }, { status: 400 });
     }
 
     const certRows = await db
@@ -66,6 +74,7 @@ export async function POST(
           status: 'Tervalidasi',
           adminNote: adminNote || null,
           readinessBoostApplied: boostAmount,
+          reviewedBy: session.user.id,
           reviewedAt: now,
         })
         .where(eq(certificates.id, certId))
@@ -104,8 +113,9 @@ export async function POST(
         .update(certificates)
         .set({
           status: 'Ditolak',
-          adminNote: adminNote || 'Dokumen belum memenuhi kualifikasi atau tidak terbaca dengan jelas.',
+          adminNote: adminNote?.trim(),
           readinessBoostApplied: 0,
+          reviewedBy: session.user.id,
           reviewedAt: now,
         })
         .where(eq(certificates.id, certId))

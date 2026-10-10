@@ -12,6 +12,8 @@ interface CertificateItem {
   penyelenggara: string;
   tanggalTerbit: string;
   kategoriSkill: string | null;
+  sumber?: string;
+  catatanTambahan?: string | null;
   fileMimeType: string;
   fileSize: number;
   status: string;
@@ -166,7 +168,7 @@ export function AdminCertificatesClient({ initialCertificates }: { initialCertif
                     )}
 
                     <span className="text-[11px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 font-medium">
-                      Sumber: {cert.source === 'kegiatan' ? 'Kegiatan Terkurasi' : 'Skill Passport'}
+                      Sumber: {cert.sumber || (cert.source === 'kegiatan' ? 'Kegiatan di Gapless' : 'Skill Passport')}
                     </span>
                   </div>
 
@@ -188,6 +190,12 @@ export function AdminCertificatesClient({ initialCertificates }: { initialCertif
                       User: <strong>{cert.userName || cert.userEmail}</strong> ({cert.userEmail})
                     </span>
                   </div>
+
+                  {cert.catatanTambahan && (
+                    <p className="text-xs text-indigo-700 bg-indigo-50/60 p-2 rounded-lg border border-indigo-100 mt-2">
+                      Catatan User: {cert.catatanTambahan}
+                    </p>
+                  )}
 
                   {cert.adminNote && (
                     <p className="text-xs text-slate-500 bg-slate-50 p-2 rounded-lg border border-slate-100 mt-2">

@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
       where: eq(users.id, session.user.id),
     });
 
-    const isAdmin = currentUser?.role === 'ADMIN' || session.user.email === 'nauvaldzakwanbaihaqi@gmail.com';
+    const isAdmin = currentUser?.isAdmin || currentUser?.role === 'ADMIN' || session.user.email === 'nauvaldzakwanbaihaqi@gmail.com';
     if (!isAdmin) {
       return NextResponse.json({ error: 'Forbidden: Hanya admin yang dapat mengakses daftar sertifikat' }, { status: 403 });
     }
@@ -30,11 +30,14 @@ export async function GET(req: NextRequest) {
         penyelenggara: certificates.penyelenggara,
         tanggalTerbit: certificates.tanggalTerbit,
         kategoriSkill: certificates.kategoriSkill,
+        sumber: certificates.sumber,
+        catatanTambahan: certificates.catatanTambahan,
         fileMimeType: certificates.fileMimeType,
         fileSize: certificates.fileSize,
         status: certificates.status,
         adminNote: certificates.adminNote,
         readinessBoostApplied: certificates.readinessBoostApplied,
+        reviewedBy: certificates.reviewedBy,
         source: certificates.source,
         createdAt: certificates.createdAt,
         reviewedAt: certificates.reviewedAt,

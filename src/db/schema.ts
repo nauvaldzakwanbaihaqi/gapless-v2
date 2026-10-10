@@ -26,6 +26,7 @@ export const users = pgTable("user", {
   image: text("image"),
   tier: text("tier").default("FREE").notNull(), // Penanda FREE atau PREMIUM
   role: text("role").default("USER").notNull(), // "USER" | "ADMIN"
+  isAdmin: boolean("is_admin").default(false).notNull(),
 });
 
 export const accounts = pgTable(
@@ -555,16 +556,19 @@ export const certificates = pgTable("certificates", {
   penyelenggara: text("penyelenggara").notNull(),
   tanggalTerbit: date("tanggal_terbit").notNull(),
   kategoriSkill: text("kategori_skill"),
+  sumber: text("sumber").default("Kegiatan di Gapless").notNull(), // "Kegiatan di Gapless" | "Kursus Eksternal" | "Organisasi" | "Lomba" | "Lainnya"
+  catatanTambahan: text("catatan_tambahan"),
   fileStorageKey: text("file_storage_key").notNull(),
   fileMimeType: text("file_mime_type").notNull(),
   fileSize: integer("file_size").notNull(),
   status: text("status").default("Menunggu Review").notNull(), // "Menunggu Review" | "Tervalidasi" | "Ditolak"
   adminNote: text("admin_note"),
   readinessBoostApplied: integer("readiness_boost_applied").default(0).notNull(),
-  source: text("source").default("passport").notNull(), // "passport" | "kegiatan"
+  reviewedBy: text("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at", { mode: "date" }),
+  source: text("source").default("passport").notNull(), // legacy tag
   activityId: text("activity_id"),
   createdAt: timestamp("created_at", { mode: "date" }).defaultNow().notNull(),
-  reviewedAt: timestamp("reviewed_at", { mode: "date" }),
 });
 
 export const certificatesRelations = relations(certificates, ({ one }) => ({

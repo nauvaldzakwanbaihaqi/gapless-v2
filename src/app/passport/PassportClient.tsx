@@ -74,6 +74,8 @@ export interface CertificateData {
   penyelenggara: string;
   tanggalTerbit: string;
   kategoriSkill: string | null;
+  sumber?: string;
+  catatanTambahan?: string | null;
   fileMimeType: string;
   fileSize: number;
   status: string;
@@ -137,6 +139,8 @@ export function PassportClient({
   const [formPenyelenggara, setFormPenyelenggara] = useState('');
   const [formTanggal, setFormTanggal] = useState('');
   const [formSkill, setFormSkill] = useState('');
+  const [formSumber, setFormSumber] = useState('Kegiatan di Gapless');
+  const [formCatatan, setFormCatatan] = useState('');
   const [isSubmittingCert, setIsSubmittingCert] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -170,6 +174,8 @@ export function PassportClient({
     fd.append('penyelenggara', formPenyelenggara.trim());
     fd.append('tanggalTerbit', formTanggal);
     if (formSkill) fd.append('kategoriSkill', formSkill);
+    fd.append('sumber', formSumber);
+    if (formCatatan.trim()) fd.append('catatanTambahan', formCatatan.trim());
     fd.append('file', uploadFile);
     fd.append('source', 'passport');
 
@@ -187,6 +193,8 @@ export function PassportClient({
         setFormPenyelenggara('');
         setFormTanggal('');
         setFormSkill('');
+        setFormSumber('Kegiatan di Gapless');
+        setFormCatatan('');
       } else {
         setUploadError(data.error || 'Gagal mengunggah sertifikat');
       }
@@ -469,7 +477,7 @@ export function PassportClient({
       </div>
 
       {/* SECTION: Sertifikat & Portofolio (Konversi Poin Readiness) */}
-      <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-5">
+      <div id="sertifikat" className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-5 scroll-mt-24">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -577,7 +585,7 @@ export function PassportClient({
 
                   <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
                     <span className="text-[10px] text-slate-400 capitalize">
-                      Sumber: {cert.source === 'kegiatan' ? 'Kegiatan' : 'Passport'}
+                      Sumber: {cert.sumber || (cert.source === 'kegiatan' ? 'Kegiatan di Gapless' : 'Passport')}
                     </span>
                     <a
                       href={`/api/certificates/${cert.id}/file`}
@@ -765,14 +773,14 @@ export function PassportClient({
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Kategori Skill
+                      Kategori Skill Relevan
                     </label>
                     <select
                       value={formSkill}
                       onChange={(e) => setFormSkill(e.target.value)}
                       className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 bg-white"
                     >
-                      <option value="">Pilih kategori...</option>
+                      <option value="">Pilih kategori skill...</option>
                       {availableSkills.map((sk) => (
                         <option key={sk} value={sk}>
                           {sk}
@@ -780,6 +788,36 @@ export function PassportClient({
                       ))}
                     </select>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Sumber / Asal Sertifikat <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    value={formSumber}
+                    onChange={(e) => setFormSumber(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 bg-white"
+                  >
+                    <option value="Kegiatan di Gapless">Kegiatan di Gapless</option>
+                    <option value="Kursus Eksternal">Kursus Eksternal</option>
+                    <option value="Organisasi">Organisasi</option>
+                    <option value="Lomba">Lomba</option>
+                    <option value="Lainnya">Lainnya</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Catatan Tambahan (Opsional)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Juara 1 Nasional / Sertifikat kompetensi dengan predikat A"
+                    value={formCatatan}
+                    onChange={(e) => setFormCatatan(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800"
+                  />
                 </div>
 
                 <div>
