@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import { db } from '@/db';
 import { certificates, users } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
+import { isUserAdmin } from '@/lib/admin';
 
 export async function GET(req: NextRequest) {
   try {
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
       where: eq(users.id, session.user.id),
     });
 
-    const isAdmin = currentUser?.isAdmin || currentUser?.role === 'ADMIN' || session.user.email === 'nauvaldzakwanbaihaqi@gmail.com';
+    const isAdmin = isUserAdmin({ ...currentUser, email: session.user.email });
     if (!isAdmin) {
       return NextResponse.json({ error: 'Forbidden: Hanya admin yang dapat mengakses daftar sertifikat' }, { status: 403 });
     }

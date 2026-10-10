@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { certificates, users } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { readCertificateFile } from '@/lib/certificate_storage';
+import { isUserAdmin } from '@/lib/admin';
 
 export async function GET(
   req: NextRequest,
@@ -36,7 +37,7 @@ export async function GET(
       const currentUser = await db.query.users.findFirst({
         where: eq(users.id, session.user.id),
       });
-      if (currentUser?.role === 'ADMIN' || session.user.email === 'nauvaldzakwanbaihaqi@gmail.com') {
+      if (isUserAdmin({ ...currentUser, email: session.user.email })) {
         isAuthorized = true;
       }
     }

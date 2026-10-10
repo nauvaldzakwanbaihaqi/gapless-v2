@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { certificates, users } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 import { Navbar } from '@/components/Navbar';
+import { isUserAdmin } from '@/lib/admin';
 import { AdminCertificatesClient } from './AdminCertificatesClient';
 
 export const metadata = { title: 'Admin Review Sertifikat | Gapless' };
@@ -18,7 +19,7 @@ export default async function AdminCertificatesPage() {
     where: eq(users.id, session.user.id),
   });
 
-  const isAdmin = currentUser?.role === 'ADMIN' || session.user.email === 'nauvaldzakwanbaihaqi@gmail.com';
+  const isAdmin = isUserAdmin({ ...currentUser, email: session.user.email });
   if (!isAdmin) {
     redirect('/');
   }

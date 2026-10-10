@@ -4,6 +4,7 @@ import { db } from '@/db';
 import { certificates, users, readinessEvents, activityEvidence } from '@/db/schema';
 import { eq } from 'drizzle-orm';
 import { CERT_READINESS_BOOST } from '@/config/readiness';
+import { isUserAdmin } from '@/lib/admin';
 import { z } from 'zod';
 
 const reviewSchema = z.object({
@@ -35,7 +36,7 @@ export async function POST(
       where: eq(users.id, session.user.id),
     });
 
-    const isAdmin = currentUser?.isAdmin || currentUser?.role === 'ADMIN' || session.user.email === 'nauvaldzakwanbaihaqi@gmail.com';
+    const isAdmin = isUserAdmin({ ...currentUser, email: session.user.email });
     if (!isAdmin) {
       return NextResponse.json({ error: 'Forbidden: Hanya admin yang dapat mereview sertifikat' }, { status: 403 });
     }

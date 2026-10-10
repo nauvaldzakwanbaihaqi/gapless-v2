@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 import { signIn, signOut } from "next-auth/react";
 import { useAuthGuard } from "@/hooks/useAuthGuard";
-import { LogOut, Crown } from "lucide-react";
+import { LogOut, Crown, ShieldCheck } from "lucide-react";
 
 interface AuthButtonProps {
     variant?: 'light' | 'dark';
@@ -95,6 +95,20 @@ export default function AuthButton({ variant = 'light' }: AuthButtonProps) {
                                     Upgrade ke Pro
                                 </Link>
                             </div>
+                        )}
+
+                        {Boolean((session?.user as any)?.isAdmin) && (
+                            <>
+                                <span className={`text-[9px] ${isDark ? 'text-slate-600' : 'text-slate-300'}`}>•</span>
+                                <Link 
+                                    href="/admin/certificates" 
+                                    className="inline-flex items-center gap-1 text-[10px] font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 border border-indigo-200/80 px-1.5 py-0.5 rounded-md transition"
+                                    title="Buka Panel Admin Review Sertifikat"
+                                >
+                                    <ShieldCheck className="w-2.5 h-2.5 text-indigo-600" />
+                                    <span>Admin</span>
+                                </Link>
+                            </>
                         )}
                     </div>
                 </div>

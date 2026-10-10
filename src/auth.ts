@@ -7,6 +7,7 @@ import { users } from "./db/schema"
 import { eq } from "drizzle-orm"
 
 import { hasActivePro } from "./lib/payment_service"
+import { isUserAdmin } from "./lib/admin"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     adapter: DrizzleAdapter(db),
@@ -29,10 +30,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         const isPro = await hasActivePro(userId);
                         session.user.isPro = isPro;
                         session.user.tier = isPro ? 'Student Pro' : 'FREE';
+                        session.user.isAdmin = isUserAdmin({ ...user, email: session.user.email });
                     } catch (e) {
                         console.error("Error fetching user pro status in session:", e);
                         session.user.isPro = false;
                         session.user.tier = 'FREE';
+                        session.user.isAdmin = isUserAdmin({ email: session.user.email });
                     }
                 }
             }
