@@ -168,97 +168,95 @@ Bahasa Indonesia, nada profesional tapi ramah. Maks 150 kata.`;
     }
 
     // =========================================================================
-    // TRANSAKSI ATOMIK: Status Selesai + Readiness Boost (+1%)
+    // SIMPAN PROGRESS & READINESS BOOST (+1%)
     // =========================================================================
     const now = new Date();
     let resultProgress;
 
     try {
-      await db.transaction(async (tx) => {
-        const existing = await tx
-          .select()
-          .from(userMissionProgress)
-          .where(eq(userMissionProgress.userId, session.user.id));
+      const existing = await db
+        .select()
+        .from(userMissionProgress)
+        .where(eq(userMissionProgress.userId, session.user.id));
 
-        const missionProgress = existing.find((p) => p.missionId === missionId);
+      const missionProgress = existing.find((p) => p.missionId === missionId);
 
-        if (missionProgress) {
-          const updated = await tx
-            .update(userMissionProgress)
-            .set({
-              status: 'completed',
-              submissionUrl: parsed.data.submissionUrl || missionProgress.submissionUrl,
-              submissionText: userNotes,
-              notes: userNotes,
-              evidenceType: 'self-report',
-              completedAt: missionProgress.completedAt || now,
-              updatedAt: now,
-            })
-            .where(eq(userMissionProgress.id, missionProgress.id))
-            .returning();
-          resultProgress = updated[0];
-        } else {
-          const inserted = await tx
-            .insert(userMissionProgress)
-            .values({
-              userId: session.user.id,
-              missionId,
-              status: 'completed',
-              submissionUrl: parsed.data.submissionUrl || null,
-              submissionText: userNotes,
-              notes: userNotes,
-              evidenceType: 'self-report',
-              completedAt: now,
-              updatedAt: now,
-            })
-            .returning();
-          resultProgress = inserted[0];
-        }
-
-        // Catat ke readiness_events (idempotent, unique index mencegah duplicate boost)
-        await tx
-          .insert(readinessEvents)
+      if (missionProgress) {
+        const updated = await db
+          .update(userMissionProgress)
+          .set({
+            status: 'completed',
+            submissionUrl: parsed.data.submissionUrl || missionProgress.submissionUrl,
+            submissionText: userNotes,
+            notes: userNotes,
+            evidenceType: 'self-report',
+            completedAt: missionProgress.completedAt || now,
+            updatedAt: now,
+          })
+          .where(eq(userMissionProgress.id, missionProgress.id))
+          .returning();
+        resultProgress = updated[0];
+      } else {
+        const inserted = await db
+          .insert(userMissionProgress)
           .values({
             userId: session.user.id,
-            sourceType: 'mission',
-            sourceId: missionId,
-            boostAmount: MISSION_READINESS_BOOST,
+            missionId,
+            status: 'completed',
+            submissionUrl: parsed.data.submissionUrl || null,
+            submissionText: userNotes,
+            notes: userNotes,
+            evidenceType: 'self-report',
+            completedAt: now,
+            updatedAt: now,
           })
-          .onConflictDoNothing();
+          .returning();
+        resultProgress = inserted[0];
+      }
 
-        // Simpan feedback AI khusus pengguna Gapless Pro
-        if (isPro && parsedAi.feedback) {
-          const existingFeedback = await tx
-            .select()
-            .from(missionFeedbacks)
-            .where(and(
-              eq(missionFeedbacks.userId, session.user.id),
-              eq(missionFeedbacks.missionId, missionId)
-            ))
-            .limit(1);
+      // Catat ke readiness_events (idempotent, unique index mencegah duplicate boost)
+      await db
+        .insert(readinessEvents)
+        .values({
+          userId: session.user.id,
+          sourceType: 'mission',
+          sourceId: missionId,
+          boostAmount: MISSION_READINESS_BOOST,
+        })
+        .onConflictDoNothing();
 
-          if (existingFeedback.length > 0) {
-            await tx
-              .update(missionFeedbacks)
-              .set({
-                submissionText: userNotes,
-                aiFeedback: parsedAi.feedback,
-                createdAt: now,
-              })
-              .where(eq(missionFeedbacks.id, existingFeedback[0].id));
-          } else {
-            await tx.insert(missionFeedbacks).values({
-              userId: session.user.id,
-              missionId,
+      // Simpan feedback AI khusus pengguna Gapless Pro
+      if (isPro && parsedAi.feedback) {
+        const existingFeedback = await db
+          .select()
+          .from(missionFeedbacks)
+          .where(and(
+            eq(missionFeedbacks.userId, session.user.id),
+            eq(missionFeedbacks.missionId, missionId)
+          ))
+          .limit(1);
+
+        if (existingFeedback.length > 0) {
+          await db
+            .update(missionFeedbacks)
+            .set({
               submissionText: userNotes,
               aiFeedback: parsedAi.feedback,
               createdAt: now,
-            });
-          }
+            })
+            .where(eq(missionFeedbacks.id, existingFeedback[0].id));
+        } else {
+          await db.insert(missionFeedbacks).values({
+            userId: session.user.id,
+            missionId,
+            submissionText: userNotes,
+            aiFeedback: parsedAi.feedback,
+            createdAt: now,
+          });
         }
-      });
-    } catch (txErr) {
-      console.error('Atomic transaction error on mission submit:', txErr);
+      }
+    } catch (saveErr) {
+      console.error('Error saving mission progress:', saveErr);
       return NextResponse.json(
         { error: 'Gagal menyimpan status misi. Coba lagi.' },
         { status: 500 }
