@@ -578,3 +578,33 @@ export const certificatesRelations = relations(certificates, ({ one }) => ({
   user: one(users, { fields: [certificates.userId], references: [users.id] }),
 }));
 
+// ──────────────────────────────────────────────
+// LAPORAN GAP MENDALAM (KONSULTAN PDF)
+// ──────────────────────────────────────────────
+
+export const reportContents = pgTable("report_contents", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  assessmentResultId: text("assessment_result_id").notNull().references(() => assessmentResults.id, { onDelete: "cascade" }),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  careerSlug: text("career_slug").notNull(),
+  reportNumber: text("report_number").notNull().unique(), // GL-YYYYMM-XXXXXX
+  aiSkillInterpretations: jsonb("ai_skill_interpretations").notNull(),
+  aiActionPlan306090: jsonb("ai_action_plan_30_60_90").notNull(),
+  generatedAt: timestamp("generated_at", { mode: "date" }).defaultNow().notNull(),
+  isStale: boolean("is_stale").default(false).notNull(),
+});
+
+export const reportContentsRelations = relations(reportContents, ({ one }) => ({
+  user: one(users, { fields: [reportContents.userId], references: [users.id] }),
+  assessmentResult: one(assessmentResults, { fields: [reportContents.assessmentResultId], references: [assessmentResults.id] }),
+}));
+
+export const learningTimeEstimates = pgTable("learning_time_estimates", {
+  id: serial("id").primaryKey(),
+  skillKey: text("skill_key").notNull(),
+  gapSize: integer("gap_size").notNull(),
+  hoursMin: integer("hours_min").notNull(),
+  hoursMax: integer("hours_max").notNull(),
+  hoursPerWeekAssumption: integer("hours_per_week_assumption").default(5).notNull(),
+});
+

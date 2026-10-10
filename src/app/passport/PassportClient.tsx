@@ -877,7 +877,7 @@ export function PassportClient({
                     {uploadFile ? (
                       <div className="flex items-center justify-center gap-2 text-xs text-blue-600 font-semibold py-1">
                         <FileCheck className="w-4 h-4" />
-                        <span className="truncate max-w-[200px]">{uploadFile.name}</span>
+                        <span className="truncate max-w-50">{uploadFile.name}</span>
                         <span className="text-slate-400 font-normal">({(uploadFile.size / 1024 / 1024).toFixed(2)} MB)</span>
                       </div>
                     ) : (

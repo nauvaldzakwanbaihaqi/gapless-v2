@@ -142,6 +142,7 @@ export function ResultDetailClient({
         freeSummary={freeSummary}
         careerName={careerProfile.title}
         careerSlug={careerSlug}
+        assessmentId={resultId}
         onPurchaseSuccess={() => {
           fetchInsight();
         }}
