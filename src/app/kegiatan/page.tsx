@@ -6,7 +6,7 @@ import { LearningTabsNav } from '@/components/LearningTabsNav';
 import { getEntitlements } from '@/lib/entitlements';
 import { db } from '@/db';
 import { activities, savedActivities, activityEvidence } from '@/db/schema';
-import { eq, asc, desc } from 'drizzle-orm';
+import { eq, asc } from 'drizzle-orm';
 import { KegiatanClient } from './KegiatanClient';
 
 export const metadata = { title: 'Rekomendasi Kegiatan | Gapless' };
@@ -15,30 +15,28 @@ export default async function KegiatanPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/api/auth/signin?callbackUrl=/kegiatan');
 
-  const isPro = await hasActivePro(session.user.id);
+  const [isPro, savedRows, evidenceRows] = await Promise.all([
+    hasActivePro(session.user.id),
+    db
+      .select({ activityId: savedActivities.activityId })
+      .from(savedActivities)
+      .where(eq(savedActivities.userId, session.user.id)),
+    db
+      .select()
+      .from(activityEvidence)
+      .where(eq(activityEvidence.userId, session.user.id)),
+  ]);
+
   const ent = getEntitlements(isPro);
 
-  // Ambil kegiatan aktif
-  // Urutan: Free by deadline terdekat, Plus by sortOrder / match
+  // Ambil kegiatan aktif sesuai tier
   const allActivities = await db
     .select()
     .from(activities)
     .where(eq(activities.isActive, true))
     .orderBy(ent.isPro ? asc(activities.sortOrder) : asc(activities.deadline));
 
-  // Ambil saved activities user
-  const savedRows = await db
-    .select({ activityId: savedActivities.activityId })
-    .from(savedActivities)
-    .where(eq(savedActivities.userId, session.user.id));
-
   const savedIds = savedRows.map((r) => r.activityId);
-
-  // Ambil bukti kegiatan user
-  const evidenceRows = await db
-    .select()
-    .from(activityEvidence)
-    .where(eq(activityEvidence.userId, session.user.id));
 
   const evidenceMap = Object.fromEntries(
     evidenceRows.map((e) => [e.activityId, e])

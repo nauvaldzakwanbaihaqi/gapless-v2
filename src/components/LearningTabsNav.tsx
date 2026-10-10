@@ -27,6 +27,7 @@ export function LearningTabsNav() {
               <Link
                 key={tab.href}
                 href={tab.href}
+                prefetch={true}
                 id={tab.id}
                 className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 -mb-px transition-all duration-200 whitespace-nowrap rounded-t-xl ${
                   isActive
@@ -52,6 +53,7 @@ export function LearningTabsNav() {
               <Link
                 key={tab.href}
                 href={tab.href}
+                prefetch={true}
                 id={`${tab.id}-mobile`}
                 className={`flex-1 flex flex-col items-center gap-1 py-2 px-1 transition-all duration-200 ${
                   isActive ? 'text-blue-600 font-semibold' : 'text-slate-400 hover:text-slate-600'

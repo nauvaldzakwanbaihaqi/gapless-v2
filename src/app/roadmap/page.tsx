@@ -24,32 +24,35 @@ export default async function RoadmapPage({ searchParams }: RoadmapPageProps) {
     redirect('/api/auth/signin?callbackUrl=/roadmap');
   }
 
-  // Fetch active roadmaps (max 2)
-  const history = await db
-    .select({
-      id: assessmentResults.id,
-      createdAt: assessmentResults.createdAt,
-      selectedCareer: assessmentResults.selectedCareer,
-      skillRatings: assessmentResults.skillRatings,
-      quizType: assessmentResults.quizType,
-      careerSlug: assessmentResults.careerSlug,
-      moduleStatuses: roadmapProgress.moduleStatuses,
-    })
-    .from(assessmentResults)
-    .leftJoin(
-      roadmapProgress, 
-      and(
-        eq(roadmapProgress.userId, session.user.id),
-        eq(roadmapProgress.careerSlug, assessmentResults.careerSlug)
+  // Fetch active roadmaps and Pro status in parallel
+  const [history, isPro] = await Promise.all([
+    db
+      .select({
+        id: assessmentResults.id,
+        createdAt: assessmentResults.createdAt,
+        selectedCareer: assessmentResults.selectedCareer,
+        skillRatings: assessmentResults.skillRatings,
+        quizType: assessmentResults.quizType,
+        careerSlug: assessmentResults.careerSlug,
+        moduleStatuses: roadmapProgress.moduleStatuses,
+      })
+      .from(assessmentResults)
+      .leftJoin(
+        roadmapProgress, 
+        and(
+          eq(roadmapProgress.userId, session.user.id),
+          eq(roadmapProgress.careerSlug, assessmentResults.careerSlug)
+        )
       )
-    )
-    .where(
-      and(
-        eq(assessmentResults.userId, session.user.id),
-        isNotNull(assessmentResults.selectedCareer)
+      .where(
+        and(
+          eq(assessmentResults.userId, session.user.id),
+          isNotNull(assessmentResults.selectedCareer)
+        )
       )
-    )
-    .orderBy(desc(assessmentResults.isActive), desc(assessmentResults.createdAt));
+      .orderBy(desc(assessmentResults.isActive), desc(assessmentResults.createdAt)),
+    hasActivePro(session.user.id),
+  ]);
 
   if (history.length === 0) {
     return (
@@ -71,7 +74,6 @@ export default async function RoadmapPage({ searchParams }: RoadmapPageProps) {
     );
   }
 
-  const isPro = await hasActivePro(session.user.id);
   const userTier = isPro ? 'Pro' : 'Free';
 
   return (
