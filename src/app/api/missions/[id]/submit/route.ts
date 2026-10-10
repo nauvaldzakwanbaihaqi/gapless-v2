@@ -7,6 +7,7 @@ import { hasActivePro } from '@/lib/payment_service';
 import { z } from 'zod';
 
 const submitSchema = z.object({
+  submissionText: z.string().max(4000).optional(),
   submissionUrl: z.string().url().optional().or(z.literal('')),
   notes: z.string().max(2000).optional(),
 });
@@ -57,8 +58,8 @@ export async function POST(
 
     const missionIndex = compMissions.findIndex((m) => m.id === missionId);
 
-    // Misi index >= 1 (misi ke-2 dan seterusnya) hanya untuk user Pro
-    if (missionIndex > 0) {
+    // Misi index !== 0 (misi ke-2 dan seterusnya) hanya untuk user Pro
+    if (missionIndex !== 0) {
       const isPro = await hasActivePro(session.user.id);
       if (!isPro) {
         return NextResponse.json(
@@ -67,6 +68,8 @@ export async function POST(
         );
       }
     }
+
+    const userNotes = parsed.data.submissionText || parsed.data.notes || null;
 
     // Idempotent upsert progress
     const now = new Date();
@@ -84,7 +87,7 @@ export async function POST(
         .set({
           status: 'completed',
           submissionUrl: parsed.data.submissionUrl || missionProgress.submissionUrl,
-          notes: parsed.data.notes || missionProgress.notes,
+          notes: userNotes || missionProgress.notes,
           evidenceType: 'self-report',
           completedAt: missionProgress.completedAt || now,
           updatedAt: now,
@@ -100,7 +103,7 @@ export async function POST(
           missionId,
           status: 'completed',
           submissionUrl: parsed.data.submissionUrl || null,
-          notes: parsed.data.notes || null,
+          notes: userNotes,
           evidenceType: 'self-report',
           completedAt: now,
           updatedAt: now,

@@ -110,10 +110,12 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
   const allCompetencies = Object.keys(COMPETENCY_CONFIG);
 
   const completedCount = missions.filter(
-    (m) => progressMap[m.id]?.status === 'completed'
+    (m) => !m.isLocked && (progressMap[m.id]?.status === 'completed' || submittedId === m.id)
   ).length;
 
   async function handleSubmit(missionId: string) {
+    const targetMission = missions.find((m) => m.id === missionId);
+    if (targetMission?.isLocked) return;
     if (!submissionText.trim()) return;
     setIsSubmitting(true);
     try {
@@ -172,8 +174,9 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
               const Icon = cfg.icon;
               const misiList = groups[comp] || [];
               const done = misiList.filter((m) => {
+                if (m.isLocked) return false;
                 const p = progressMap[m.id];
-                return p?.status === 'completed';
+                return p?.status === 'completed' || submittedId === m.id;
               }).length;
               const pct = misiList.length > 0 ? Math.round((done / misiList.length) * 100) : 0;
               return (
@@ -220,9 +223,8 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
 
             <div className="space-y-3">
               {misiList.map((mission) => {
-                const progress = progressMap[mission.id] || submittedId === mission.id ? { status: 'completed' } : null;
-                const isCompleted = progress?.status === 'completed' || submittedId === mission.id;
                 const isLocked = Boolean(mission.isLocked);
+                const isCompleted = !isLocked && (progressMap[mission.id]?.status === 'completed' || submittedId === mission.id);
                 const isExpanded = expandedId === mission.id;
                 const diffCfg = DIFFICULTY_CONFIG[mission.difficultyLevel || 'medium'];
 
@@ -231,10 +233,10 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
                     key={mission.id}
                     layout
                     className={`border rounded-2xl overflow-hidden transition-shadow ${
-                      isCompleted
-                        ? 'bg-white border-emerald-200'
-                        : isLocked
+                      isLocked
                         ? 'bg-slate-50/70 border-slate-200/80 hover:border-indigo-300'
+                        : isCompleted
+                        ? 'bg-white border-emerald-200'
                         : 'bg-white border-slate-200 hover:border-blue-200'
                     } ${isExpanded ? 'shadow-md' : 'shadow-xs'}`}
                   >
@@ -250,16 +252,16 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
                       id={`mission-${mission.id}`}
                     >
                       <div className={`flex-shrink-0 mt-0.5 w-6 h-6 rounded-full flex items-center justify-center ${
-                        isCompleted
-                          ? 'bg-emerald-100'
-                          : isLocked
+                        isLocked
                           ? 'bg-slate-200/70 text-slate-500'
+                          : isCompleted
+                          ? 'bg-emerald-100'
                           : 'bg-slate-100 text-slate-500'
                       }`}>
-                        {isCompleted ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                        ) : isLocked ? (
+                        {isLocked ? (
                           <Lock className="w-3.5 h-3.5 text-slate-500" />
+                        ) : isCompleted ? (
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                         ) : (
                           <Zap className="w-3.5 h-3.5 text-slate-500" />
                         )}
@@ -268,14 +270,14 @@ export function MisiClient({ missions, progressMap, lockedCount, entitlements, s
                         <div className="flex flex-wrap items-start justify-between gap-2">
                           <div>
                             <p className={`font-semibold text-sm ${
-                              isCompleted
-                                ? 'text-emerald-800'
-                                : isLocked
+                              isLocked
                                 ? 'text-slate-700'
+                                : isCompleted
+                                ? 'text-emerald-800'
                                 : 'text-slate-900'
                             }`}>
                               {mission.title}
-                              {isCompleted && (
+                              {!isLocked && isCompleted && (
                                 <span className="ml-2 text-xs font-normal text-emerald-600">✓ Selesai (Diisi sendiri)</span>
                               )}
                             </p>
