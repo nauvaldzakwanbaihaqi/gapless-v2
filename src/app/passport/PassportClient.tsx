@@ -485,6 +485,9 @@ export function PassportClient({
                 <Award className="w-5 h-5" />
               </span>
               <h2 className="text-base font-bold text-slate-900">Sertifikat & Portofolio</h2>
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                +3% per dokumen tervalidasi
+              </span>
               {certs.filter((c) => c.status === 'Tervalidasi').length > 0 && (
                 <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                   +{certs.filter((c) => c.status === 'Tervalidasi').length * 3}% Readiness Didapat
@@ -719,6 +722,28 @@ export function PassportClient({
                 >
                   <X className="w-4 h-4" />
                 </button>
+              </div>
+
+              {/* Indikator Poin & Ketentuan Kenaikan Skor */}
+              <div className="p-3.5 rounded-xl bg-gradient-to-r from-blue-50/90 to-indigo-50/90 border border-blue-200/80 text-slate-800 space-y-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-xs text-blue-950">
+                  <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span>Ketentuan Kenaikan Skor Readiness:</span>
+                </div>
+                <div className="text-[11px] leading-relaxed text-slate-600 space-y-1">
+                  <div className="flex items-start gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 mt-1.5" />
+                    <span><strong>Saat Diunggah:</strong> Status <em className="text-amber-700 font-medium">Menunggu Review</em> (skor belum bertambah sampai diverifikasi admin).</span>
+                  </div>
+                  <div className="flex items-start gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
+                    <span><strong>Setelah Disetujui Admin:</strong> Status <em className="text-emerald-700 font-medium">Tervalidasi</em> → Skor otomatis naik <strong className="text-blue-700">+3% flat</strong> per dokumen!</span>
+                  </div>
+                  <div className="flex items-start gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0 mt-1.5" />
+                    <span><strong>Berkas:</strong> Format JPG, PNG, atau PDF (maks. 5MB). Pastikan dokumen terlihat jelas dan relevan.</span>
+                  </div>
+                </div>
               </div>
 
               {uploadError && (
