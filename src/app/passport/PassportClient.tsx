@@ -486,16 +486,16 @@ export function PassportClient({
               </span>
               <h2 className="text-base font-bold text-slate-900">Sertifikat & Portofolio</h2>
               <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                +3% per dokumen tervalidasi
+                Kurasi Tim Ahli
               </span>
               {certs.filter((c) => c.status === 'Tervalidasi').length > 0 && (
                 <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  +{certs.filter((c) => c.status === 'Tervalidasi').length * 3}% Readiness Didapat
+                  {certs.filter((c) => c.status === 'Tervalidasi').length} Dokumen Tervalidasi
                 </span>
               )}
             </div>
             <p className="text-xs text-slate-500">
-              Unggah sertifikat terverifikasi untuk meningkatkan Skill Readiness kamu (+3% per sertifikat tervalidasi).
+              Unggah sertifikat atau portofolio untuk diverifikasi admin dan mendongkrak skor Skill Readiness kamu.
             </p>
           </div>
 
@@ -563,9 +563,17 @@ export function PassportClient({
                       </span>
 
                       {isApproved && (
-                        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded-md">
-                          +3% Skill Readiness
-                        </span>
+                        isPro ? (
+                          <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded-md flex items-center gap-1">
+                            <Sparkles className="w-3 h-3 text-emerald-600" />
+                            +{cert.readinessBoostApplied || 3}% ke Skill Relevan
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1" title="Detail persentase peningkatan skill dapat dilihat di akun Gapless Pro">
+                            <Lock className="w-2.5 h-2.5 text-slate-400" />
+                            <span>Detail % (Khusus Pro)</span>
+                          </span>
+                        )
                       )}
                     </div>
 
@@ -724,24 +732,24 @@ export function PassportClient({
                 </button>
               </div>
 
-              {/* Indikator Poin & Ketentuan Kenaikan Skor */}
+              {/* Panduan Validasi Portofolio & Akumulasi Skor */}
               <div className="p-3.5 rounded-xl bg-gradient-to-r from-blue-50/90 to-indigo-50/90 border border-blue-200/80 text-slate-800 space-y-1.5">
                 <div className="flex items-center gap-1.5 font-bold text-xs text-blue-950">
                   <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
-                  <span>Ketentuan Kenaikan Skor Readiness:</span>
+                  <span>Panduan Validasi & Akumulasi Skor:</span>
                 </div>
                 <div className="text-[11px] leading-relaxed text-slate-600 space-y-1">
                   <div className="flex items-start gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0 mt-1.5" />
-                    <span><strong>Saat Diunggah:</strong> Status <em className="text-amber-700 font-medium">Menunggu Review</em> (skor belum bertambah sampai diverifikasi admin).</span>
+                    <span><strong>Kurasi Admin:</strong> Setiap berkas diverifikasi tim ahli untuk memastikan keaslian & relevansi kategori.</span>
                   </div>
                   <div className="flex items-start gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
-                    <span><strong>Setelah Disetujui Admin:</strong> Status <em className="text-emerald-700 font-medium">Tervalidasi</em> → Skor otomatis naik <strong className="text-blue-700">+3% flat</strong> per dokumen!</span>
+                    <span><strong>Dampak ke Skill:</strong> Portofolio tervalidasi akan mendongkrak skill yang diasah dan total Skill Readiness.</span>
                   </div>
                   <div className="flex items-start gap-1.5">
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0 mt-1.5" />
-                    <span><strong>Berkas:</strong> Format JPG, PNG, atau PDF (maks. 5MB). Pastikan dokumen terlihat jelas dan relevan.</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0 mt-1.5" />
+                    <span><strong>Khusus Gapless Pro:</strong> Rincian analisis persentase kenaikan tiap skill dapat dilihat eksklusif oleh akun Pro.</span>
                   </div>
                 </div>
               </div>
