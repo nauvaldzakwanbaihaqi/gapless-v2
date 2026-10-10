@@ -87,7 +87,14 @@ export async function POST(
     // =========================================================================
     // LAPIS 2: Validasi Relevansi via AI (format JSON terstruktur)
     // =========================================================================
-    const systemPrompt = `Kamu adalah career coach yang mengevaluasi hasil misi soft skill mahasiswa. Tugasmu ada DUA: pertama, nilai apakah jawaban relevan dengan misi yang diberikan. Kedua, jika relevan, berikan feedback konstruktif.
+    const rawName = session.user.name?.trim() || '';
+    const firstName = rawName.split(' ')[0] || 'Sobat';
+
+    const systemPrompt = `Kamu adalah career coach profesional yang mengevaluasi hasil misi soft skill mahasiswa bernama ${firstName}. Tugasmu ada DUA: pertama, nilai apakah jawaban relevan dengan misi yang diberikan. Kedua, jika relevan, berikan feedback konstruktif.
+
+ATURAN PENYAPAAN USER (SANGAT PENTING):
+- Jika relevan, mulailah feedback dengan menyapa nama akun asli user: "Halo ${firstName}!"
+- DILARANG KERAS menggunakan nama tokoh fiktif yang ada di teks jawaban/simulasi (misalnya "Budi", "Zaki", atau nama rekaan lainnya). Selalu gunakan nama akun pengguna yaitu "${firstName}".
 
 Respons HARUS dalam format JSON:
 {
@@ -103,12 +110,19 @@ Jawaban dianggap TIDAK relevan jika:
 - Hanya berisi tanda baca atau simbol
 
 Jika relevan, feedback mencakup:
+- Sapaan hangat: "Halo ${firstName}!"
 - Yang sudah baik (1 poin)
 - Yang perlu diperbaiki (1 poin)
 - Saran konkret (1 poin)
-Bahasa Indonesia, nada profesional tapi ramah. Maks 150 kata.`;
+Bahasa Indonesia, nada profesional tapi ramah dan suportif. Maks 150 kata.`;
 
-    const userPrompt = `Judul misi: ${currentMission.title}. Kompetensi: ${currentMission.competency}.\nInstruksi misi: ${currentMission.description || '-'}.\nJawaban user: ${userNotes}`;
+    const userPrompt = `Nama akun user: ${firstName} (${rawName || 'Mahasiswa Gapless'})
+Judul misi: ${currentMission.title}. Kompetensi: ${currentMission.competency}.
+Instruksi misi: ${currentMission.description || '-'}.
+Jawaban/hasil simulasi user:
+"""
+${userNotes}
+"""`;
 
     let aiRawText = '';
     try {

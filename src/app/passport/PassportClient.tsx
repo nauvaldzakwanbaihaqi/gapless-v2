@@ -140,7 +140,6 @@ export function PassportClient({
   const [formJudul, setFormJudul] = useState('');
   const [formPenyelenggara, setFormPenyelenggara] = useState('');
   const [formTanggal, setFormTanggal] = useState('');
-  const [formSkill, setFormSkill] = useState('');
   const [formSumber, setFormSumber] = useState('Kegiatan di Gapless');
   const [formCatatan, setFormCatatan] = useState('');
   const [isSubmittingCert, setIsSubmittingCert] = useState(false);
@@ -163,11 +162,6 @@ export function PassportClient({
   const currentHardScore = Math.min(95, hardSkillScore + certBoostDiff);
   const currentSoftScore = Math.min(98, softSkillScore + certBoostDiff);
 
-  const careerProfile = findCareerProfile(currentAssessment?.careerSlug || currentAssessment?.careerTitle);
-  const availableSkills = careerProfile?.skills.map((s) => s.name) || [
-    'Komunikasi', 'Problem Solving', 'Leadership', 'Teknis / Coding', 'Manajemen Proyek'
-  ];
-
   const handleUploadCertificate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!uploadFile || !formJudul.trim() || !formPenyelenggara.trim() || !formTanggal) {
@@ -187,7 +181,6 @@ export function PassportClient({
     fd.append('judul', formJudul.trim());
     fd.append('penyelenggara', formPenyelenggara.trim());
     fd.append('tanggalTerbit', formTanggal);
-    if (formSkill) fd.append('kategoriSkill', formSkill);
     fd.append('sumber', formSumber);
     if (formCatatan.trim()) fd.append('catatanTambahan', formCatatan.trim());
     fd.append('file', uploadFile);
@@ -206,7 +199,6 @@ export function PassportClient({
         setFormJudul('');
         setFormPenyelenggara('');
         setFormTanggal('');
-        setFormSkill('');
         setFormSumber('Kegiatan di Gapless');
         setFormCatatan('');
       } else {
@@ -581,7 +573,7 @@ export function PassportClient({
                         isPro ? (
                           <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100/60 px-2 py-0.5 rounded-md flex items-center gap-1">
                             <Sparkles className="w-3 h-3 text-emerald-600" />
-                            +{cert.readinessBoostApplied || 3}% ke Skill Relevan
+                            +{cert.readinessBoostApplied || 3}% Skill Readiness
                           </span>
                         ) : (
                           <span className="text-[10px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md flex items-center gap-1" title="Detail persentase peningkatan skill dapat dilihat di akun Gapless Pro">
@@ -597,9 +589,6 @@ export function PassportClient({
 
                     <div className="flex items-center gap-2 text-[11px] text-slate-500 pt-1 flex-wrap">
                       <span>Terbit: {cert.tanggalTerbit}</span>
-                      {cert.kategoriSkill && (
-                        <span className="text-blue-600 font-medium">#{cert.kategoriSkill}</span>
-                      )}
                     </div>
 
                     {isPro && cert.aiAnalysis && (
@@ -614,9 +603,9 @@ export function PassportClient({
                       </div>
                     )}
 
-                    {cert.adminNote && (
+                    {!cert.aiAnalysis && cert.adminNote && (
                       <p className="text-[11px] text-slate-600 bg-slate-100 p-2 rounded-lg border border-slate-200/80 mt-1.5">
-                        Catatan Admin: <em>{cert.adminNote}</em>
+                        Catatan Evaluasi: <em>{cert.adminNote}</em>
                       </p>
                     )}
                   </div>
@@ -768,7 +757,7 @@ export function PassportClient({
                 <div className="text-[11px] leading-relaxed text-slate-600 space-y-1">
                   <div className="flex items-start gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 mt-1.5" />
-                    <span><strong>Analisis Otomatis:</strong> Dokumen langsung dianalisis oleh AI dalam hitungan detik tanpa perlu menunggu antrean admin!</span>
+                    <span><strong>100% Otomatis:</strong> Dokumen langsung diverifikasi secara otonom oleh AI dalam hitungan detik tanpa perlu antrean review!</span>
                   </div>
                   <div className="flex items-start gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 mt-1.5" />
@@ -833,38 +822,20 @@ export function PassportClient({
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      Kategori Skill Relevan
+                      Sumber / Asal Sertifikat <span className="text-rose-500">*</span>
                     </label>
                     <select
-                      value={formSkill}
-                      onChange={(e) => setFormSkill(e.target.value)}
+                      value={formSumber}
+                      onChange={(e) => setFormSumber(e.target.value)}
                       className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 bg-white"
                     >
-                      <option value="">Pilih kategori skill...</option>
-                      {availableSkills.map((sk) => (
-                        <option key={sk} value={sk}>
-                          {sk}
-                        </option>
-                      ))}
+                      <option value="Kegiatan di Gapless">Kegiatan di Gapless</option>
+                      <option value="Kursus Eksternal">Kursus Eksternal</option>
+                      <option value="Organisasi">Organisasi</option>
+                      <option value="Lomba">Lomba</option>
+                      <option value="Lainnya">Lainnya</option>
                     </select>
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    Sumber / Asal Sertifikat <span className="text-rose-500">*</span>
-                  </label>
-                  <select
-                    value={formSumber}
-                    onChange={(e) => setFormSumber(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-slate-800 bg-white"
-                  >
-                    <option value="Kegiatan di Gapless">Kegiatan di Gapless</option>
-                    <option value="Kursus Eksternal">Kursus Eksternal</option>
-                    <option value="Organisasi">Organisasi</option>
-                    <option value="Lomba">Lomba</option>
-                    <option value="Lainnya">Lainnya</option>
-                  </select>
                 </div>
 
                 <div>
@@ -931,7 +902,7 @@ export function PassportClient({
                     disabled={isSubmittingCert || !uploadFile}
                     className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition disabled:opacity-50"
                   >
-                    {isSubmittingCert ? 'Mengunggah...' : 'Unggah & Ajukan Review'}
+                    {isSubmittingCert ? 'Menganalisis dengan AI...' : 'Unggah & Verifikasi AI'}
                   </button>
                 </div>
               </form>

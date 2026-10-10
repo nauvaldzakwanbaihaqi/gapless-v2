@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     "Discover your ideal tech career path with an AI-powered personality and skills assessment. Find out if you're a Creator, Builder, Thinker, or Connector.",
   keywords: ["career assessment", "AI career", "career discovery", "tech career"],
   icons: {
-    icon: "/Asset 2.png",
+    icon: "/Asset 1.png",
   },
 };
 
